@@ -1,0 +1,8 @@
+/data/
+*.csv
+*.zip
+.env
+__pycache__/
+api/data/*.csv*
+mlruns/
+.venv/

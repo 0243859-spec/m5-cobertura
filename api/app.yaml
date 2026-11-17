@@ -1,0 +1,8 @@
+# Configuración de Databricks Apps
+# Databricks define UVICORN_HOST/UVICORN_PORT automáticamente.
+command: ["uvicorn", "app.main:app"]
+env:
+  - name: SERVING_ENDPOINT
+    valueFrom: serving-endpoint      # recurso "Model serving endpoint" con permiso "Can query"
+  - name: ENDPOINT_TIMEOUT
+    value: "60"

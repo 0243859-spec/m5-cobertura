@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cobertura de Inventario</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a66; --line: #e3e1da;
+    --accent: #1f5f8b; --accent-ink: #ffffff;
+    --hi: #b3261e; --hi-bg: #fbe9e7; --mid: #8a5a00; --mid-bg: #fdf1d8; --lo: #1e6b3a; --lo-bg: #e3f3e8;
+    --bar-a: #b9c7d3; --bar-b: #1f5f8b; --bar-c: #d9a441;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141414; --panel: #1d1d1d; --ink: #ecebe7; --muted: #a09e98; --line: #33322f;
+      --accent: #6fa8d6; --accent-ink: #0d1b26;
+      --hi: #ff8a80; --hi-bg: #3a1d1b; --mid: #f0c060; --mid-bg: #3a2f17; --lo: #7fd49a; --lo-bg: #18301f;
+      --bar-a: #4a5866; --bar-b: #6fa8d6; --bar-c: #e0b55a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 28px 16px 8px; max-width: 1080px; margin: 0 auto; }
+  header h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  main { max-width: 1080px; margin: 0 auto; padding: 16px; display: grid; gap: 16px;
+         grid-template-columns: minmax(280px, 340px) 1fr; }
+  @media (max-width: 820px) { main { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  input, select { width: 100%; padding: 9px 10px; font: inherit; color: var(--ink); background: var(--bg);
+                  border: 1px solid var(--line); border-radius: 7px; }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  button { margin-top: 18px; width: 100%; padding: 11px; font: inherit; font-weight: 600; border: 0;
+           border-radius: 8px; background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+  button:disabled { opacity: .55; cursor: wait; }
+  .msg { margin-top: 12px; padding: 10px 12px; border-radius: 8px; font-size: 14px; display: none; }
+  .msg.err { display: block; background: var(--hi-bg); color: var(--hi); }
+  .msg.info { display: block; background: var(--mid-bg); color: var(--mid); }
+  .empty { color: var(--muted); text-align: center; padding: 60px 10px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+  .head h2 { margin: 0; font-size: 18px; }
+  .badge { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+  .badge.alto { background: var(--hi-bg); color: var(--hi); }
+  .badge.medio { background: var(--mid-bg); color: var(--mid); }
+  .badge.bajo { background: var(--lo-bg); color: var(--lo); }
+  .badge.sin_demanda { background: var(--line); color: var(--muted); }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+  .kpi { border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  .kpi .l { font-size: 12px; color: var(--muted); }
+  .kpi .v { font-size: 24px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .kpi .s { font-size: 12px; color: var(--muted); }
+  .chart { margin-top: 6px; display: grid; gap: 10px; }
+  .bar { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+  .track { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .fill { height: 28px; border-radius: 4px; min-width: 3px; }
+  .track b { color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  @media (max-width: 480px) { .bar { grid-template-columns: 1fr; gap: 4px; } }
+  .explain { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 14px; padding-top: 10px; }
+  footer { max-width: 1080px; margin: 0 auto; padding: 8px 16px 28px; font-size: 12px; color: var(--muted); }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cobertura de inventario</h1>
+  <p>Pronóstico de demanda a 28 días por producto y tienda · Walmart M5 · modelo publicado en Databricks</p>
+</header>
+
+<main>
+  <section class="panel" aria-label="Consulta">
+    <form id="f" novalidate>
+      <label for="store">Tienda</label>
+      <select id="store" required><option value="">Cargando…</option></select>
+
+      <label for="item">Producto</label>
+      <input id="item" list="items" placeholder="Escribe, ej. FOODS_3_090" autocomplete="off" required>
+      <datalist id="items"></datalist>
+
+      <label for="inv">Inventario disponible hoy (unidades)</label>
+      <input id="inv" type="number" min="0" step="1" value="150" required>
+
+      <div class="row">
+        <div>
+          <label for="lt">Lead time (días)</label>
+          <input id="lt" type="number" min="0" max="60" value="7" required>
+        </div>
+        <div>
+          <label for="cov">Días a cubrir</label>
+          <input id="cov" type="number" min="1" max="56" value="14" required>
+        </div>
+      </div>
+
+      <label for="sl">Nivel de servicio</label>
+      <select id="sl">
+        <option value="90">90%</option><option value="95" selected>95%</option>
+        <option value="98">98%</option><option value="99">99%</option>
+      </select>
+      <div class="hint">Mayor nivel → más stock de seguridad.</div>
+
+      <button id="go" type="submit">Calcular cobertura</button>
+      <div id="msg" class="msg" role="status" aria-live="polite"></div>
+    </form>
+  </section>
+
+  <section class="panel" id="out" aria-live="polite">
+    <div class="empty">Elige tienda y producto, captura tu inventario y calcula.</div>
+  </section>
+</main>
+
+<footer>
+  API documentada en <a href="/docs">/docs</a> (Swagger) · Estado en <a href="/health">/health</a>
+</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const fmt = (n, d = 0) => n == null ? "—" : Number(n).toLocaleString("es-MX", { maximumFractionDigits: d, minimumFractionDigits: d });
+const TIMEOUT_MS = 150000;   // mayor que el máximo de la API (2 intentos × 60 s)
+
+function showMsg(text, kind = "err") { const m = $("msg"); m.className = "msg " + kind; m.textContent = text; }
+function clearMsg() { $("msg").className = "msg"; $("msg").textContent = ""; }
+
+async function api(path, opts = {}) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  try {
+    const r = await fetch(path, { ...opts, signal: ctrl.signal });
+    let body = null;
+    try { body = await r.json(); } catch { /* respuesta no JSON */ }
+    if (!r.ok) {
+      let detail = body && body.detail;
+      if (Array.isArray(detail)) detail = detail.map(d => `${d.loc.at(-1)}: ${d.msg}`).join(" · ");
+      throw new Error(detail || `Error HTTP ${r.status}`);
+    }
+    if (body == null) throw new Error("La API devolvió una respuesta vacía o inválida.");
+    return body;
+  } catch (e) {
+    if (e.name === "AbortError") throw new Error("Se agotó el tiempo de espera. El modelo puede estar despertando; intenta de nuevo en un minuto.");
+    if (e instanceof TypeError) throw new Error("No hay conexión con la API. ¿Está corriendo el contenedor?");
+    throw e;
+  } finally { clearTimeout(t); }
+}
+
+async function loadStores() {
+  try {
+    const stores = await api("/stores");
+    $("store").innerHTML = stores.map(s => `<option value="${s}">${s}</option>`).join("");
+    $("store").value = stores.includes("CA_3") ? "CA_3" : stores[0];
+    $("item").value = "FOODS_3_090";
+    loadItems();
+  } catch (e) { $("store").innerHTML = `<option value="">Sin tiendas</option>`; showMsg(e.message); }
+}
+
+let itemsTimer;
+async function loadItems() {
+  clearTimeout(itemsTimer);
+  itemsTimer = setTimeout(async () => {
+    const s = $("store").value; if (!s) return;
+    try {
+      const q = encodeURIComponent($("item").value.trim());
+      const items = await api(`/items?store_id=${s}&q=${q}&limit=60`);
+      $("items").innerHTML = items.map(i => `<option value="${i}">`).join("");
+    } catch { /* el autocompletado es opcional */ }
+  }, 200);
+}
+
+function validate() {
+  const item = $("item").value.trim().toUpperCase();
+  if (!$("store").value) return "Elige una tienda.";
+  if (!/^(FOODS|HOBBIES|HOUSEHOLD)_\d_\d{3}$/.test(item)) return "Producto inválido. Formato: FOODS_3_090.";
+  const inv = Number($("inv").value), lt = Number($("lt").value), cov = Number($("cov").value);
+  if ($("inv").value === "" || !(inv >= 0)) return "El inventario debe ser un número ≥ 0.";
+  if (!Number.isInteger(lt) || lt < 0 || lt > 60) return "Lead time: entero entre 0 y 60.";
+  if (!Number.isInteger(cov) || cov < 1 || cov > 56) return "Días a cubrir: entero entre 1 y 56.";
+  return null;
+}
+
+function chart(r) {
+  const bars = [
+    { label: "Últimos 28 días", v: r.last_28d_units, c: "var(--bar-a)" },
+    { label: "Pronóstico 28 días", v: r.forecast_28d_units, c: "var(--bar-b)" },
+    { label: "Inventario actual", v: Number($("inv").value), c: "var(--bar-c)" },
+  ];
+  const max = Math.max(...bars.map(b => b.v), 1);
+  return bars.map(b => `<div class="bar"><span>${b.label}</span>
+    <div class="track"><div class="fill" style="width:calc((100% - 70px) * ${b.v / max});background:${b.c}"></div><b>${fmt(b.v)}</b></div></div>`).join("");
+}
+
+function render(r) {
+  const riskTxt = { alto: "Riesgo alto de quiebre", medio: "Pedir pronto", bajo: "Cobertura suficiente", sin_demanda: "Sin demanda esperada" }[r.risk];
+  const trend = r.trend_pct > 0 ? `▲ ${fmt(r.trend_pct, 1)}%` : r.trend_pct < 0 ? `▼ ${fmt(Math.abs(r.trend_pct), 1)}%` : "sin cambio";
+  $("out").innerHTML = `
+    <div class="head"><h2>${r.item_id} · ${r.store_id}</h2><span class="badge ${r.risk}">${riskTxt}</span></div>
+    <div class="hint">Fecha de referencia (hoy del dataset): ${r.as_of}${r.price != null ? ` · precio $${fmt(r.price, 2)}` : ""}</div>
+    <div class="kpis">
+      <div class="kpi"><div class="l">Demanda próximos 28 días</div><div class="v">${fmt(r.forecast_28d_units)}</div><div class="s">${trend} vs. últimos 28 días</div></div>
+      <div class="kpi"><div class="l">Días de cobertura</div><div class="v">${r.coverage_days == null ? "∞" : fmt(r.coverage_days, 1)}</div><div class="s">${r.stockout_date ? "Se agota ≈ " + r.stockout_date : "—"}</div></div>
+      <div class="kpi"><div class="l">Pedido sugerido</div><div class="v">${fmt(r.suggested_order_units)}</div><div class="s">${r.suggested_order_units > 0 ? "unidades, pedir hoy" : "aún no es necesario pedir"}</div></div>
+      <div class="kpi"><div class="l">Punto de reorden</div><div class="v">${fmt(r.reorder_point_units)}</div><div class="s">incluye ${fmt(r.safety_stock_units)} de seguridad</div></div>
+    </div>
+    <div class="chart" role="img" aria-label="Comparación: últimos 28 días, pronóstico e inventario">${chart(r)}</div>
+    <div class="explain">Demanda diaria esperada: ${fmt(r.forecast_daily_units, 2)} u/día.
+      Se pide cuando el inventario llega al punto de reorden (demanda durante el lead time + stock de seguridad);
+      la cantidad = demanda × (lead time + días a cubrir) + stock de seguridad − inventario.
+      Pronóstico generado por el endpoint <b>${r.model_endpoint}</b> de Databricks.</div>`;
+}
+
+$("store").addEventListener("change", loadItems);
+$("item").addEventListener("input", loadItems);
+$("f").addEventListener("submit", async (ev) => {
+  ev.preventDefault(); clearMsg();
+  const err = validate(); if (err) return showMsg(err);
+  const btn = $("go"); btn.disabled = true; btn.textContent = "Consultando modelo…";
+  const slow = setTimeout(() => showMsg("El modelo está despertando (scale to zero). Puede tardar hasta 2 minutos…", "info"), 5000);
+  try {
+    const r = await api("/forecast", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        store_id: $("store").value, item_id: $("item").value.trim().toUpperCase(),
+        inventory_units: Number($("inv").value), lead_time_days: Number($("lt").value),
+        coverage_target_days: Number($("cov").value), service_level: $("sl").value,
+      }),
+    });
+    if (typeof r.forecast_28d_units !== "number") throw new Error("La respuesta del modelo no tiene el formato esperado.");
+    clearMsg(); render(r);
+  } catch (e) { showMsg(e.message); }
+  finally { clearTimeout(slow); btn.disabled = false; btn.textContent = "Calcular cobertura"; }
+});
+loadStores();
+</script>
+</body>
+</html>
