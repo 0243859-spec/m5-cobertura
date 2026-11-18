@@ -3,130 +3,409 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cobertura de Inventario</title>
+<title>Cobertura M5</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22%230068ff%22/%3E%3Cpath%20d%3D%22M12%2016h6l5%2022h20l5-15H21%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%224.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Ccircle%20cx%3D%2226%22%20cy%3D%2246%22%20r%3D%223.5%22%20fill%3D%22%23fff%22/%3E%3Ccircle%20cx%3D%2241%22%20cy%3D%2246%22%20r%3D%223.5%22%20fill%3D%22%23fff%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #f6f5f1; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6a66; --line: #e3e1da;
-    --accent: #1f5f8b; --accent-ink: #ffffff;
-    --hi: #b3261e; --hi-bg: #fbe9e7; --mid: #8a5a00; --mid-bg: #fdf1d8; --lo: #1e6b3a; --lo-bg: #e3f3e8;
-    --bar-a: #b9c7d3; --bar-b: #1f5f8b; --bar-c: #d9a441;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #141414; --panel: #1d1d1d; --ink: #ecebe7; --muted: #a09e98; --line: #33322f;
-      --accent: #6fa8d6; --accent-ink: #0d1b26;
-      --hi: #ff8a80; --hi-bg: #3a1d1b; --mid: #f0c060; --mid-bg: #3a2f17; --lo: #7fd49a; --lo-bg: #18301f;
-      --bar-a: #4a5866; --bar-b: #6fa8d6; --bar-c: #e0b55a;
-    }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink);
-         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  header { padding: 28px 16px 8px; max-width: 1080px; margin: 0 auto; }
-  header h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
-  header p { margin: 4px 0 0; color: var(--muted); }
-  main { max-width: 1080px; margin: 0 auto; padding: 16px; display: grid; gap: 16px;
-         grid-template-columns: minmax(280px, 340px) 1fr; }
-  @media (max-width: 820px) { main { grid-template-columns: 1fr; } }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
-  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
-  input, select { width: 100%; padding: 9px 10px; font: inherit; color: var(--ink); background: var(--bg);
-                  border: 1px solid var(--line); border-radius: 7px; }
-  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .hint { font-size: 12px; color: var(--muted); margin-top: 3px; }
-  button { margin-top: 18px; width: 100%; padding: 11px; font: inherit; font-weight: 600; border: 0;
-           border-radius: 8px; background: var(--accent); color: var(--accent-ink); cursor: pointer; }
-  button:disabled { opacity: .55; cursor: wait; }
-  .msg { margin-top: 12px; padding: 10px 12px; border-radius: 8px; font-size: 14px; display: none; }
-  .msg.err { display: block; background: var(--hi-bg); color: var(--hi); }
-  .msg.info { display: block; background: var(--mid-bg); color: var(--mid); }
-  .empty { color: var(--muted); text-align: center; padding: 60px 10px; }
-  .head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; }
-  .head h2 { margin: 0; font-size: 18px; }
-  .badge { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
-  .badge.alto { background: var(--hi-bg); color: var(--hi); }
-  .badge.medio { background: var(--mid-bg); color: var(--mid); }
-  .badge.bajo { background: var(--lo-bg); color: var(--lo); }
-  .badge.sin_demanda { background: var(--line); color: var(--muted); }
-  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
-  .kpi { border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
-  .kpi .l { font-size: 12px; color: var(--muted); }
-  .kpi .v { font-size: 24px; font-weight: 650; font-variant-numeric: tabular-nums; }
-  .kpi .s { font-size: 12px; color: var(--muted); }
-  .chart { margin-top: 6px; display: grid; gap: 10px; }
-  .bar { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
-  .track { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .fill { height: 28px; border-radius: 4px; min-width: 3px; }
-  .track b { color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  @media (max-width: 480px) { .bar { grid-template-columns: 1fr; gap: 4px; } }
-  .explain { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 14px; padding-top: 10px; }
-  footer { max-width: 1080px; margin: 0 auto; padding: 8px 16px 28px; font-size: 12px; color: var(--muted); }
-  footer a { color: var(--accent); }
+:root{
+  --navy:#0b2240;--blue:#0068ff;--blue-d:#0050c8;--blue-soft:#e6f0ff;--sky:#58a3ff;--sun:#ffc72c;
+  --bg:#ffffff;--panel:#f3f6fa;--line:#d9e0e9;--grid:#e6ebf1;
+  --ink:#0b2240;--text:#1d2533;--muted:#55657a;--faint:#8a98a8;
+  --green:#00804c;--green-soft:#dcf3e7;--red:#d50032;--red-soft:#ffe3e9;--amber:#9a5a00;--amber-soft:#fcefd6;
+  --s1:#0068ff;--s2:#0b2240;--s3:#ffb000;--s4:#00a36c;--s5:#58a3ff;--s6:#d50032;--s7:#8a98a8;--s8:#7b3fe4;--s9:#00b5c8;--s10:#f2711c;
+  --font:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --wrap:1240px;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:clip}
+h1,h2,h3{color:var(--ink)}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- encabezado ---------- */
+header{position:sticky;top:-44px;z-index:20;background:#fff;box-shadow:0 3px 10px rgba(11,34,64,.12)}
+.util{background:var(--navy);color:#fff}
+.util .in{max-width:var(--wrap);margin:0 auto;padding:0 24px;height:44px;display:flex;align-items:center;justify-content:flex-end;gap:26px;font-size:14px;font-weight:700}
+.util .in>span{white-space:nowrap}
+.util b{font-weight:500;color:#cfe1ff}
+.live{display:flex;align-items:center;gap:8px}
+.live i{width:9px;height:9px;border-radius:50%;background:#8aa0bd}
+.live.ok i{background:var(--sun);box-shadow:0 0 0 3px rgba(255,199,44,.25)}
+.live.err i{background:#ff5c7a}
+.bar{max-width:var(--wrap);margin:0 auto;padding:0 24px;min-height:88px;display:flex;align-items:center;gap:24px}
+.brandwrap{display:flex;align-items:center;gap:12px;flex:none}
+.mark{width:52px;height:52px;flex:none}
+.brand{font-weight:700;font-size:26px;line-height:1.05;letter-spacing:-.02em;color:var(--ink)}
+.brand small{display:block;font-size:16px;font-weight:500;letter-spacing:0;margin-top:4px;color:var(--muted)}
+nav{display:flex;gap:6px;margin-left:auto;overflow-x:auto;align-self:stretch;scrollbar-width:none}
+nav button{font:inherit;font-weight:500;font-size:18px;border:0;background:transparent;color:var(--ink);padding:0 16px;cursor:pointer;white-space:nowrap;position:relative}
+nav button::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:4px;border-radius:4px 4px 0 0;background:transparent}
+nav button[aria-selected=true]{color:var(--blue)}
+nav button[aria-selected=true]::after{background:var(--blue)}
+nav button:hover:not([aria-selected=true]){color:var(--blue)}
+button:focus-visible,select:focus-visible,input:focus-visible,.cat:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* ---------- distribución ---------- */
+main{max-width:var(--wrap);margin:0 auto;padding:0 24px 72px}
+section[role=tabpanel]{display:none}
+section[role=tabpanel].on{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.grid{display:grid;gap:24px;margin-bottom:24px}
+.k4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g57{grid-template-columns:minmax(300px,5fr) 7fr}
+
+/* banda de encabezado de cada pestaña */
+.pband{position:relative;margin:0 calc(50% - 50vw) 40px;padding:44px 24px 84px;color:#fff;text-align:center;overflow:hidden;
+  background:radial-gradient(120% 160% at 10% 0%,#2f86ff 0%,#0068ff 30%,#0a46b8 62%,#0b2240 100%);border-radius:0 0 50% 50% / 0 0 90px 90px}
+.pband::before,.band::before{content:"";position:absolute;inset:0;opacity:.18;pointer-events:none;background-repeat:no-repeat;background-size:100% 100%;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.4'%3E%3Cpath d='M0 220 C200 160 320 260 520 200 S860 120 1200 170'/%3E%3Cpath d='M0 250 C220 200 360 290 560 230 S900 160 1200 210'/%3E%3Cpath d='M0 190 C180 130 300 220 500 170 S820 90 1200 130'/%3E%3C/g%3E%3C/svg%3E")}
+.pband>*,.band>*{position:relative}
+.pband .eb,.band .eb{display:inline-block;font-size:14px;font-weight:700;letter-spacing:.02em;padding:6px 16px;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;margin:0 0 16px}
+.pband h2{color:#fff;font-size:clamp(28px,3.6vw,44px);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin:0 auto;max-width:26ch}
+.pband p{color:rgba(255,255,255,.86);font-size:17px;margin:14px auto 0;max-width:64ch}
+
+/* hero del resumen */
+.band{position:relative;margin:0 calc(50% - 50vw);padding:56px 24px 140px;color:#fff;text-align:center;overflow:hidden;
+  background:radial-gradient(120% 140% at 10% 0%,#2f86ff 0%,#0068ff 30%,#0a46b8 62%,#0b2240 100%);border-radius:0 0 50% 50% / 0 0 150px 150px}
+.stats{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.stats .kpi{padding:0 18px;border-left:1px solid rgba(255,255,255,.25)}
+.stats .kpi:first-child{border-left:0}
+.stats .val{white-space:nowrap;font-size:clamp(30px,3.6vw,50px);font-weight:700;letter-spacing:-.035em;line-height:1;margin:0 0 12px}
+.stats .lbl{font-size:17px;font-weight:700}
+.stats .foot{font-size:14px;color:rgba(255,255,255,.82);margin-top:6px}
+.lead{text-align:center;max-width:980px;margin:56px auto 8px}
+.lead h1{font-size:clamp(30px,4.2vw,56px);line-height:1.08;letter-spacing:-.035em;font-weight:700;color:var(--blue);margin:0 auto;max-width:22ch}
+.lead h1 em{font-style:normal;font-weight:800;color:var(--navy)}
+.lead p{font-size:clamp(17px,1.6vw,21px);color:var(--text);margin:24px auto 0;max-width:62ch}
+
+/* títulos de sección */
+.shead{margin:56px 0 24px;display:grid;gap:4px}
+.shead .eb{font-size:15px;font-weight:700;color:var(--blue);margin:0;display:flex;align-items:center;gap:10px}
+.shead .eb::before{content:"";width:28px;height:4px;border-radius:4px;background:var(--blue)}
+.shead h2{font-size:clamp(24px,2.6vw,32px);margin:0;letter-spacing:-.02em}
+.shead p{font-size:16px;color:var(--muted);margin:4px 0 0;max-width:80ch}
+
+/* tarjetas */
+.card{background:linear-gradient(135deg,#eef2f7 0%,#f7f9fc 55%,#fdfdfe 100%);border-radius:28px;padding:28px;min-width:0}
+.card h2{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+.card .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+.card.kpi .lbl{font-size:14px;font-weight:700;color:var(--muted)}
+.card.kpi .val{font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1.1;margin:10px 0 6px;color:var(--ink);font-variant-numeric:tabular-nums}
+.card.kpi .foot{font-size:13px;color:var(--muted)}
+.delta{font-weight:700}.up{color:var(--green)}.down{color:var(--red)}
+
+/* flujo del proyecto */
+.flow{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
+.flow .n{flex:1 1 130px;background:#fff;border-radius:18px;padding:16px;font-size:14px;box-shadow:0 1px 2px rgba(11,34,64,.06)}
+.flow .n b{display:block;font-size:15px;margin-bottom:2px;color:var(--ink)}
+.flow .n span{color:var(--muted);font-size:13px}
+.flow .a{align-self:center;color:var(--blue);font-weight:700}
+
+/* tarjetas de tienda */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px}
+.pcard{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:10px;background:linear-gradient(160deg,#eef2f7 0%,#f8fafc 60%,#fff 100%);border-radius:24px;padding:20px;transition:transform .18s,box-shadow .18s;min-width:0}
+.pcard:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(11,34,64,.12)}
+.pcard:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.pc-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pc-name{font-size:18px;font-weight:700;color:var(--ink)}
+.pc-st{font-size:12px;font-weight:700;color:var(--muted);background:#fff;border-radius:999px;padding:3px 10px;box-shadow:0 0 0 1px #e6ebf1}
+.pc-big{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
+.pc-big b{white-space:nowrap;font-size:30px;font-weight:700;letter-spacing:-.04em;line-height:1;color:var(--blue)}
+.pc-big span{font-size:13px;color:var(--muted)}
+
+/* formularios */
+label.f{font-size:14px;font-weight:700;color:var(--ink);display:flex;flex-direction:column;gap:6px;min-width:0}
+select,input{font:inherit;font-size:16px;border:1.5px solid #c5cfdc;background:#fff;border-radius:14px;padding:10px 14px;color:var(--ink);width:100%;min-width:0}
+select:hover,input:hover{border-color:var(--blue)}
+.fgrid{display:grid;gap:14px}
+.f2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.filters{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;justify-content:center;margin:0 0 28px}
+.filters label.f{flex:1 1 160px;max-width:220px}
+.btn{font:inherit;font-size:15px;font-weight:700;border:2px solid var(--blue);background:#fff;color:var(--blue);border-radius:999px;padding:11px 24px;cursor:pointer;transition:background .15s,color .15s}
+.btn:hover{background:var(--blue);color:#fff}
+.btn.primary{background:var(--blue);color:#fff}.btn.primary:hover{background:var(--blue-d);border-color:var(--blue-d)}
+.btn:disabled{opacity:.55;cursor:wait}
+.btn.wide{width:100%}
+.msg{margin-top:12px;padding:11px 14px;border-radius:14px;font-size:14px;font-weight:600;display:none}
+.msg.err{display:block;background:var(--red-soft);color:#b0002a}
+.msg.info{display:block;background:#fff6dc;color:#7a4b00}
+.empty{color:var(--muted);padding:40px 10px;text-align:center}
+
+/* categorías circulares */
+.cats{display:flex;flex-wrap:wrap;justify-content:center;gap:24px 14px;margin:0 auto 32px}
+.cat{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:12px;width:96px;text-align:center}
+.cat .ci{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#fff 0%,#fff 55%,#f1f4f8 100%);
+  box-shadow:0 0 0 1px #edf1f5,0 6px 18px rgba(11,34,64,.10);display:grid;place-items:center;transition:transform .18s,box-shadow .18s}
+.cat .ci svg{width:52px;height:52px}
+.cat span{font-size:14px;font-weight:500;color:var(--blue);text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1.5px}
+.cat:hover .ci{transform:translateY(-3px)}
+.cat[aria-checked=true] .ci{box-shadow:0 0 0 4px var(--blue),0 12px 26px rgba(0,104,255,.25)}
+.cat[aria-checked=true] span{font-weight:700;color:var(--ink)}
+
+/* resultado de cobertura */
+.res{background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 1px 2px rgba(11,34,64,.06)}
+.vband{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center;padding:22px;color:#fff;background:linear-gradient(120deg,#0068ff,#0a46b8)}
+.v-medio .vband{background:linear-gradient(120deg,#ffc72c,#ffa600);color:var(--navy)}
+.v-alto .vband{background:linear-gradient(120deg,#e4002b,#a8001f)}
+.v-sin_demanda .vband{background:linear-gradient(120deg,#8a98a8,#55657a)}
+.vico{grid-row:span 2;width:52px;height:52px;border-radius:50%;background:#fff;display:grid;place-items:center}
+.vico svg{width:28px;height:28px}
+.vt{font-size:13px;font-weight:700;opacity:.85;letter-spacing:.02em}
+.vv{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.vbig{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.3)}
+.v-medio .vbig{border-top-color:rgba(11,34,64,.2)}
+.vbig b{white-space:nowrap;font-size:40px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.vbig span{font-size:15px;font-weight:600;opacity:.9}
+.res dl{display:grid;grid-template-columns:1fr auto;margin:0;padding:12px 22px 6px;font-size:15px}
+.res dt,.res dd{padding:10px 0;border-bottom:1px solid var(--grid)}
+.res dt{color:var(--muted)}
+.res dd{margin:0;text-align:right;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.res dd.hl{color:var(--blue);font-size:17px}
+.res dt:last-of-type,.res dd:last-of-type{border-bottom:0}
+.res .note{padding:0 22px 20px;font-size:13px;color:var(--muted)}
+
+/* barras comparativas */
+.hbars{display:grid;gap:12px;margin-top:6px}
+.hb{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:12px;font-size:14px;color:var(--muted)}
+.hb .tr{display:flex;align-items:center;gap:10px;min-width:0}
+.hb .fl{height:22px;border-radius:999px;min-width:4px}
+.hb b{color:var(--ink);font-variant-numeric:tabular-nums}
+.pair{display:grid;grid-template-columns:120px 1fr 70px;align-items:center;gap:12px;font-size:14px;margin:10px 0}
+.pair .bars{display:grid;gap:4px;min-width:0}
+.pair .bars div{height:10px;border-radius:999px;min-width:3px}
+.pair .pct{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* gráfica de líneas */
+.linechart{position:relative;margin-top:8px}
+.linechart svg{width:100%;height:auto;display:block;overflow:visible}
+.linechart .ax{fill:var(--faint);font-size:12px;font-family:var(--font)}
+.linechart .gl{stroke:var(--grid)}
+.linechart .cursor{stroke:var(--navy);stroke-dasharray:3 3;visibility:hidden}
+.linechart .cursor.on{visibility:visible}
+.tip{position:absolute;pointer-events:none;z-index:5;background:#fff;border:1px solid var(--line);box-shadow:0 12px 30px rgba(11,34,64,.16);border-radius:14px;padding:10px 12px;font-size:12px;min-width:160px;white-space:nowrap;display:none}
+.tip .t{color:var(--muted);margin-bottom:4px;font-weight:600}
+.tip b{color:var(--ink);font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;margin:12px 0 0}
+.legend span{display:inline-flex;align-items:center;gap:7px;background:#fff;padding:6px 12px 6px 10px;border-radius:999px;font-weight:600;color:var(--ink)}
+.legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
+
+/* encabezado oscuro de tienda */
+.chead{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;background:var(--navy);color:#fff;border-radius:28px;padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden}
+.chead::after{content:"";position:absolute;right:-80px;top:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(0,104,255,.55),rgba(0,104,255,0) 70%);pointer-events:none}
+.chead>*{position:relative;z-index:1}
+.chead .ci{width:84px;height:84px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--blue);font-weight:800;font-size:22px}
+.chead .eb{font-size:14px;font-weight:700;color:#9cc3ff;margin:0 0 4px}
+.chead h2{color:#fff;font-size:clamp(24px,3vw,34px);margin:0;letter-spacing:-.025em}
+.chead .s{color:rgba(255,255,255,.78);font-size:15px;margin:6px 0 0}
+.ck{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid rgba(255,255,255,.18);padding-top:22px}
+.ck div{padding:0 18px;border-left:1px solid rgba(255,255,255,.18)}.ck div:first-child{border-left:0;padding-left:0}
+.ck b{display:block;font-size:clamp(22px,2.6vw,32px);letter-spacing:-.03em;font-weight:700;line-height:1.1}
+.ck span{font-size:13px;color:rgba(255,255,255,.75)}
+.ck b.up{color:#8dffc3}.ck b.down{color:#ffc2cf}
+
+/* tabla */
+.ptable{background:#fff;border-radius:24px;padding:8px 8px 0;box-shadow:0 1px 2px rgba(11,34,64,.06)}
+.scroll{max-height:560px;overflow:auto;border-radius:18px}
+table{width:100%;border-collapse:collapse;font-size:14px;background:#fff}
+th{text-align:left;font-weight:700;color:var(--ink);font-size:13px;padding:14px 12px;border-bottom:2px solid var(--ink);white-space:nowrap;position:sticky;top:0;background:#fff;z-index:1}
+th.r,td.r{text-align:right}
+td{padding:11px 12px;border-bottom:1px solid var(--grid);white-space:nowrap;font-variant-numeric:tabular-nums}
+td:first-child{font-weight:700;color:var(--ink)}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:#f4f8ff}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 11px;border-radius:999px;white-space:nowrap}
+.chip.ok{background:var(--green-soft);color:var(--green)}
+.chip.bad{background:var(--red-soft);color:#b0002a}
+.chip.mid{background:#edf1f6;color:var(--muted)}
+.ubar{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+.ubar i{display:block;width:70px;height:6px;border-radius:6px;background:#e4eaf2;overflow:hidden}
+.ubar i b{display:block;height:100%;background:var(--blue);border-radius:6px}
+.ubar i b.neg{background:var(--red)}
+.tbar{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin:0 0 18px}
+.tbar label.f{flex:1 1 170px;max-width:240px}
+.tbar h3{margin:0;font-size:22px;letter-spacing:-.02em}
+
+/* pie */
+.site-foot{background:var(--navy);color:#fff;margin-top:24px}
+.site-foot .in{max-width:var(--wrap);margin:0 auto;padding:48px 24px 26px}
+.site-foot .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:32px}
+.site-foot .fb{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px}
+.site-foot p,.site-foot li{color:rgba(255,255,255,.78);font-size:14px}
+.site-foot h4{font-size:15px;margin:4px 0 12px;color:#fff}
+.site-foot ul{list-style:none;margin:0;padding:0}.site-foot li{margin:6px 0}
+.site-foot a{color:#fff}
+.site-foot .bottom{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.18);margin-top:36px;padding-top:18px;font-size:13px;color:rgba(255,255,255,.7)}
+
+/* adaptable */
+@media (max-width:1100px){.bar{flex-wrap:wrap;min-height:0;padding-top:14px;gap:8px}nav{margin-left:0;width:100%;height:52px}nav button{font-size:16px;padding:0 12px}}
+@media (max-width:960px){.k4,.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{row-gap:28px}.stats .kpi:nth-child(3){border-left:0}.g57{grid-template-columns:1fr}.site-foot .cols{grid-template-columns:1fr 1fr}.chead{grid-template-columns:1fr}.ck{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:16px}.ck div:nth-child(3){border-left:0;padding-left:0}}
+@media (max-width:560px){.util .in{padding:0 16px;gap:14px;font-size:12px;justify-content:flex-start;overflow-x:auto}.bar{padding:12px 16px 0}.mark{width:42px;height:42px}.brand{font-size:21px}.brand small{font-size:14px}
+  main{padding:0 16px 48px}.band{margin:0 -16px;padding:40px 16px 90px;border-radius:0 0 50% 50% / 0 0 60px 60px}.pband{margin:0 -16px 28px;padding:32px 16px 64px;border-radius:0 0 50% 50% / 0 0 44px 44px}
+  .stats{grid-template-columns:1fr}.stats .kpi{border-left:0}.card{padding:20px;border-radius:22px}.k4{grid-template-columns:1fr 1fr}.site-foot .cols{grid-template-columns:1fr}
+  .cat{width:76px}.cat .ci{width:76px;height:76px}.cat .ci svg{width:42px;height:42px}.hb{grid-template-columns:1fr;gap:4px}.pair{grid-template-columns:90px 1fr 60px}}
 </style>
 </head>
 <body>
 <header>
-  <h1>Cobertura de inventario</h1>
-  <p>Pronóstico de demanda a 28 días por producto y tienda · Walmart M5 · modelo publicado en Databricks</p>
+  <div class="util"><div class="in">
+    <span class="live" id="st-live"><i></i><span id="st-txt">Conectando con el modelo…</span></span>
+    <span>Datos al <b id="st-asof">—</b></span>
+    <span>Servicio <b id="st-ep">m5-demand</b></span>
+    <span><b id="st-clock">--:--</b></span>
+  </div></div>
+  <div class="bar">
+    <div class="brandwrap">
+      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#0068ff"/><path d="M12 16h6l5 22h20l5-15H21" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26" cy="46" r="3.5" fill="#fff"/><circle cx="41" cy="46" r="3.5" fill="#fff"/></svg>
+      <div class="brand">Cobertura M5<small>Pronóstico de demanda · tiendas Walmart (datos M5)</small></div>
+    </div>
+    <nav role="tablist" aria-label="Secciones">
+      <button role="tab" id="tab-res" aria-controls="v-res" aria-selected="true">Resumen</button>
+      <button role="tab" id="tab-cob" aria-controls="v-cob" aria-selected="false">Cobertura</button>
+      <button role="tab" id="tab-ven" aria-controls="v-ven" aria-selected="false">Ventas</button>
+      <button role="tab" id="tab-tie" aria-controls="v-tie" aria-selected="false">Tiendas</button>
+    </nav>
+  </div>
 </header>
 
 <main>
-  <section class="panel" aria-label="Consulta">
-    <form id="f" novalidate>
-      <label for="store">Tienda</label>
-      <select id="store" required><option value="">Cargando…</option></select>
+<!-- ============================ RESUMEN ============================ -->
+<section role="tabpanel" id="v-res" aria-labelledby="tab-res" class="on">
+  <div class="band">
+    <div class="eb">Proyecto final · Grandes Volúmenes de Datos</div>
+    <div class="stats">
+      <div class="kpi"><div class="val" id="h-units">—</div><div class="lbl">unidades analizadas</div><div class="foot" id="h-range">ventas diarias 2015–2016</div></div>
+      <div class="kpi"><div class="val">15.4 M</div><div class="lbl">filas en la capa Plata</div><div class="foot">3,049 productos × 10 tiendas</div></div>
+      <div class="kpi"><div class="val">24.8%</div><div class="lbl">error del modelo (WAPE)</div><div class="foot">demanda de 28 días por producto-tienda</div></div>
+      <div class="kpi"><div class="val">−11.8%</div><div class="lbl">error vs. regla simple</div><div class="foot">"repetir el último mes" · 3.7% por tienda-categoría</div></div>
+    </div>
+  </div>
+  <div class="lead">
+    <h1>¿Cuánto se va a vender, <em>para cuántos días alcanza</em> y cuándo pedir?</h1>
+    <p>Un modelo de machine learning entrenado con millones de ventas diarias pronostica la demanda de los próximos 28 días de cada producto en cada tienda, y la convierte en decisiones de inventario.</p>
+  </div>
 
-      <label for="item">Producto</label>
-      <input id="item" list="items" placeholder="Escribe, ej. FOODS_3_090" autocomplete="off" required>
-      <datalist id="items"></datalist>
+  <div class="shead"><div class="eb">Cómo funciona</div><h2>De los datos crudos a la decisión</h2>
+    <p>Todo el procesamiento corre en Databricks con Spark; esta página consulta el modelo publicado en tiempo real.</p></div>
+  <div class="flow">
+    <div class="n"><b>Kaggle M5</b><span>3 CSV · ventas, precios y calendario</span></div><div class="a">→</div>
+    <div class="n"><b>Bronce</b><span>tablas Delta crudas</span></div><div class="a">→</div>
+    <div class="n"><b>Plata</b><span>limpieza · 15.4 M filas</span></div><div class="a">→</div>
+    <div class="n"><b>Oro</b><span>variables de 28 días</span></div><div class="a">→</div>
+    <div class="n"><b>LightGBM</b><span>MLflow · Unity Catalog</span></div><div class="a">→</div>
+    <div class="n"><b>Servicio del modelo</b><span>Databricks Model Serving</span></div><div class="a">→</div>
+    <div class="n"><b>Esta página</b><span>FastAPI · Docker</span></div>
+  </div>
 
-      <label for="inv">Inventario disponible hoy (unidades)</label>
-      <input id="inv" type="number" min="0" step="1" value="150" required>
+  <div class="shead"><div class="eb">Tiendas</div><h2>Ventas de la última semana completa</h2>
+    <p>Unidades vendidas y cambio contra la semana anterior. Elige una tienda para ver su pronóstico.</p></div>
+  <div class="pgrid" id="r-stores"><div class="empty">Cargando tiendas…</div></div>
+</section>
 
-      <div class="row">
-        <div>
-          <label for="lt">Lead time (días)</label>
-          <input id="lt" type="number" min="0" max="60" value="7" required>
+<!-- ============================ COBERTURA ============================ -->
+<section role="tabpanel" id="v-cob" aria-labelledby="tab-cob">
+  <div class="pband"><div class="eb">Cobertura por producto</div><h2>¿Me alcanza el inventario?</h2>
+    <p>Elige un producto, captura tu inventario y el modelo calcula la demanda de 28 días, los días de cobertura y cuánto pedir.</p></div>
+  <div class="grid g57">
+    <div class="card">
+      <h2>Datos del producto</h2><p class="sub">Fecha de referencia: el día siguiente al último dato disponible.</p>
+      <form id="f" class="fgrid" novalidate>
+        <label class="f">Tienda<select id="store" required><option value="">Cargando…</option></select></label>
+        <div class="f2">
+          <label class="f">Departamento<select id="dept"></select></label>
+          <label class="f">Artículo<select id="art"><option value="">Cargando…</option></select></label>
         </div>
-        <div>
-          <label for="cov">Días a cubrir</label>
-          <input id="cov" type="number" min="1" max="56" value="14" required>
+        <input type="hidden" id="item">
+        <label class="f">Inventario disponible hoy (unidades)<input id="inv" type="number" min="0" step="1" value="150" required></label>
+        <div class="f2">
+          <label class="f">Tiempo de entrega (días)<input id="lt" type="number" min="0" max="60" value="7" required></label>
+          <label class="f">Días a cubrir<input id="cov" type="number" min="1" max="56" value="14" required></label>
         </div>
-      </div>
+        <label class="f">Nivel de servicio
+          <select id="sl"><option value="90">90%</option><option value="95" selected>95%</option><option value="98">98%</option><option value="99">99%</option></select></label>
+        <p class="hint">Mayor nivel de servicio → más inventario de seguridad.</p>
+        <button id="go" class="btn primary wide" type="submit">Calcular cobertura</button>
+        <div id="msg" class="msg" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+    <div id="out" aria-live="polite"><div class="card"><div class="empty">Aquí aparecerá el resultado.</div></div></div>
+  </div>
+</section>
 
-      <label for="sl">Nivel de servicio</label>
-      <select id="sl">
-        <option value="90">90%</option><option value="95" selected>95%</option>
-        <option value="98">98%</option><option value="99">99%</option>
-      </select>
-      <div class="hint">Mayor nivel → más stock de seguridad.</div>
+<!-- ============================ VENTAS ============================ -->
+<section role="tabpanel" id="v-ven" aria-labelledby="tab-ven">
+  <div class="pband"><div class="eb">Ventas históricas</div><h2>Explora 16 meses de ventas</h2>
+    <p>Datos de la capa Oro procesados con Spark. Filtra por categoría, estado, tienda y periodo.</p></div>
+  <div class="cats" role="radiogroup" aria-label="Categoría" id="s-cats"></div>
+  <div class="filters">
+    <label class="f">Estado<select id="s-state"><option value="">Todos</option><option value="CA">California</option><option value="TX">Texas</option><option value="WI">Wisconsin</option></select></label>
+    <label class="f">Tienda<select id="s-store"><option value="">Todas</option></select></label>
+    <label class="f">Comparar por<select id="s-group"><option value="category" selected>Categoría</option><option value="store">Tienda</option><option value="state">Estado</option><option value="total">Total</option></select></label>
+    <label class="f">Métrica<select id="s-metric"><option value="units">Unidades</option><option value="revenue">Venta ($)</option></select></label>
+    <label class="f">Periodo<select id="s-grain"><option value="day">Día</option><option value="week" selected>Semana</option><option value="month">Mes</option></select></label>
+    <label class="f">Desde<input id="s-from" type="date"></label>
+    <label class="f">Hasta<input id="s-to" type="date"></label>
+    <button class="btn" id="s-reset" type="button">Restablecer</button>
+  </div>
+  <input type="hidden" id="s-cat" value="">
+  <div id="s-msg" class="msg" role="status" aria-live="polite"></div>
+  <div id="s-out" aria-live="polite"><div class="empty">Cargando ventas…</div></div>
+</section>
 
-      <button id="go" type="submit">Calcular cobertura</button>
-      <div id="msg" class="msg" role="status" aria-live="polite"></div>
-    </form>
-  </section>
-
-  <section class="panel" id="out" aria-live="polite">
-    <div class="empty">Elige tienda y producto, captura tu inventario y calcula.</div>
-  </section>
+<!-- ============================ TIENDAS ============================ -->
+<section role="tabpanel" id="v-tie" aria-labelledby="tab-tie">
+  <div class="pband"><div class="eb">Pronóstico por tienda</div><h2>Los próximos 28 días de una tienda completa</h2>
+    <p>El modelo pronostica los ~3,000 productos de la tienda en una sola consulta por lotes.</p></div>
+  <div class="filters">
+    <label class="f">Tienda<select id="t-store"><option value="">Cargando…</option></select></label>
+    <button id="t-go" class="btn primary" type="button">Pronosticar tienda</button>
+  </div>
+  <p class="hint" style="text-align:center;margin-top:-16px">El resultado se guarda 6 horas para no volver a consultar el modelo.</p>
+  <div id="t-msg" class="msg" role="status" aria-live="polite"></div>
+  <div id="t-out" aria-live="polite"></div>
+</section>
 </main>
 
-<footer>
-  API documentada en <a href="/docs">/docs</a> (Swagger) · Estado en <a href="/health">/health</a>
-</footer>
+<footer class="site-foot"><div class="in">
+  <div class="cols">
+    <div><div class="fb"><svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#fff"/><path d="M12 16h6l5 22h20l5-15H21" fill="none" stroke="#0b2240" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26" cy="46" r="3.5" fill="#0b2240"/><circle cx="41" cy="46" r="3.5" fill="#0b2240"/></svg>Cobertura M5</div>
+      <p>Pronóstico de demanda a 28 días y cobertura de inventario por producto y tienda.</p></div>
+    <div><h4>Datos</h4><ul><li>Ventas de Walmart · M5 Forecasting (Kaggle)</li><li>3,049 productos · 10 tiendas en California, Texas y Wisconsin</li></ul></div>
+    <div><h4>Tecnología</h4><ul><li>Databricks · Spark · Delta</li><li>LightGBM · MLflow · Model Serving</li><li>FastAPI · Docker</li></ul></div>
+    <div><h4>Autor</h4><ul><li>Benjamín García</li><li>ID 0243859</li></ul></div>
+  </div>
+  <div class="bottom"><span>Proyecto académico · Universidad Panamericana. No afiliado a Walmart Inc.</span><span id="ft-model">Modelo v3 · servicio m5-demand</span></div>
+</div></footer>
 
 <script>
 const $ = (id) => document.getElementById(id);
 const fmt = (n, d = 0) => n == null ? "—" : Number(n).toLocaleString("es-MX", { maximumFractionDigits: d, minimumFractionDigits: d });
-const TIMEOUT_MS = 150000;   // mayor que el máximo de la API (2 intentos × 60 s)
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const short = (v) => v >= 1e6 ? fmt(v / 1e6, 1) + " M" : v >= 1e3 ? fmt(v / 1e3, v >= 1e4 ? 0 : 1) + " mil" : fmt(v);
+const TIMEOUT_MS = 150000, STORE_TIMEOUT_MS = 330000;
+const MONTHS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const STATE_NAME = { CA: "California", TX: "Texas", WI: "Wisconsin" };
+const CAT_ES = { FOODS: "Alimentos", HOBBIES: "Pasatiempos", HOUSEHOLD: "Hogar" };
+const DEPTS = ["FOODS_1", "FOODS_2", "FOODS_3", "HOBBIES_1", "HOBBIES_2", "HOUSEHOLD_1", "HOUSEHOLD_2"];
+// Los códigos del dataset (CA_3, FOODS_3_090) se muestran en español; la API sigue usando los códigos.
+const storeName = (s) => `${STATE_NAME[s.slice(0, 2)] || s} ${s.slice(3)}`;
+const deptName = (d) => { const [c, n] = d.split("_"); return `${CAT_ES[c] || c} ${n || ""}`.trim(); };
+const itemName = (i) => { const [c, n, k] = i.split("_"); return `${CAT_ES[c] || c} ${n} · artículo ${k}`; };
+const fdate = (iso) => { if (!iso) return "—"; const [y, m, d] = String(iso).split("-").map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
 
-function showMsg(text, kind = "err") { const m = $("msg"); m.className = "msg " + kind; m.textContent = text; }
-function clearMsg() { $("msg").className = "msg"; $("msg").textContent = ""; }
+function showMsg(id, text, kind = "err") { const m = $(id); m.className = "msg " + kind; m.textContent = text; }
+function clearMsg(id) { $(id).className = "msg"; $(id).textContent = ""; }
+function pctHtml(p) {
+  if (p == null) return `<span>—</span>`;
+  const cls = p > 0 ? "up" : p < 0 ? "down" : "";
+  return `<span class="delta ${cls}">${p > 0 ? "▲" : p < 0 ? "▼" : ""} ${fmt(Math.abs(p), 1)}%</span>`;
+}
 
-async function api(path, opts = {}) {
+async function api(path, opts = {}, timeout = TIMEOUT_MS) {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  const t = setTimeout(() => ctrl.abort(), timeout);
   try {
     const r = await fetch(path, { ...opts, signal: ctrl.signal });
     let body = null;
@@ -145,77 +424,147 @@ async function api(path, opts = {}) {
   } finally { clearTimeout(t); }
 }
 
-async function loadStores() {
+/* ============================ pestañas ============================ */
+const TABS = { "tab-res": "v-res", "tab-cob": "v-cob", "tab-ven": "v-ven", "tab-tie": "v-tie" };
+let salesLoaded = false;
+function openTab(id) {
+  for (const [tab, view] of Object.entries(TABS)) {
+    $(tab).setAttribute("aria-selected", String(tab === id));
+    $(view).classList.toggle("on", tab === id);
+  }
+  window.scrollTo({ top: 0 });
+  if (id === "tab-ven" && !salesLoaded) { salesLoaded = true; loadSales(); }
+  else if (id === "tab-ven" && LAST_CHART) lineChart($("s-chart"), ...LAST_CHART);
+}
+Object.keys(TABS).forEach(id => $(id).addEventListener("click", () => openTab(id)));
+
+/* ============================ estado y resumen ============================ */
+setInterval(() => $("st-clock").textContent = new Date().toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }), 1000);
+async function loadStatus() {
   try {
-    const stores = await api("/stores");
-    $("store").innerHTML = stores.map(s => `<option value="${s}">${s}</option>`).join("");
-    $("store").value = stores.includes("CA_3") ? "CA_3" : stores[0];
-    $("item").value = "FOODS_3_090";
-    loadItems();
-  } catch (e) { $("store").innerHTML = `<option value="">Sin tiendas</option>`; showMsg(e.message); }
+    const h = await api("/health");
+    const ok = h.status === "ok" && h.databricks_configured;
+    $("st-live").className = "live " + (ok ? "ok" : "err");
+    $("st-txt").textContent = ok ? "Modelo conectado" : "Sin conexión a Databricks";
+    $("st-ep").textContent = h.endpoint; $("ft-model").textContent = `Modelo v3 · servicio ${h.endpoint}`;
+  } catch { $("st-live").className = "live err"; $("st-txt").textContent = "API no disponible"; }
 }
 
-let itemsTimer;
-async function loadItems() {
-  clearTimeout(itemsTimer);
-  itemsTimer = setTimeout(async () => {
-    const s = $("store").value; if (!s) return;
-    try {
-      const q = encodeURIComponent($("item").value.trim());
-      const items = await api(`/items?store_id=${s}&q=${q}&limit=60`);
-      $("items").innerHTML = items.map(i => `<option value="${i}">`).join("");
-    } catch { /* el autocompletado es opcional */ }
-  }, 200);
+async function loadSummary() {
+  try {
+    const [tot, st] = await Promise.all([
+      api("/sales?group_by=total&grain=month&metric=units"),
+      api("/sales?group_by=store&grain=week&metric=units"),
+    ]);
+    $("h-units").textContent = short(tot.total);
+    $("h-range").textContent = `${fdate(tot.date_from)} → ${fdate(tot.date_to)}`;
+    $("st-asof").textContent = fdate(tot.date_to);
+    const by = {};
+    st.points.forEach(p => (by[p.series] ||= []).push(p));
+    $("r-stores").innerHTML = Object.entries(by).sort().map(([s, pts]) => {
+      pts.sort((a, b) => a.period < b.period ? -1 : 1);
+      const a = pts.at(-3), b = pts.at(-2);            // última semana completa vs. la anterior
+      const ch = a && a.value > 0 ? (b.value / a.value - 1) * 100 : null;
+      return `<button class="pcard" data-store="${esc(s)}" aria-label="Ver pronóstico de ${esc(storeName(s))}">
+        <div class="pc-top"><span class="pc-name">${esc(storeName(s))}</span></div>
+        <div class="pc-big"><b>${fmt(b ? b.value : 0)}</b><span>unidades · semana del ${b ? fdate(b.period) : "—"}</span></div>
+        <div>${pctHtml(ch)} <span class="hint">vs. semana anterior</span></div></button>`;
+    }).join("");
+    $("r-stores").querySelectorAll(".pcard").forEach(c => c.addEventListener("click", () => {
+      $("t-store").value = c.dataset.store; openTab("tab-tie"); $("t-go").click();
+    }));
+  } catch (e) {
+    $("r-stores").innerHTML = `<div class="empty">No se pudieron cargar las ventas: ${esc(e.message)}</div>`;
+  }
+}
+
+/* ============================ cobertura ============================ */
+let STORES = [];
+async function loadStores() {
+  try {
+    STORES = await api("/stores"); loadStatus();
+    const opts = STORES.map(s => `<option value="${s}">${esc(storeName(s))}</option>`).join("");
+    $("store").innerHTML = opts; $("t-store").innerHTML = opts;
+    $("store").value = $("t-store").value = STORES.includes("CA_3") ? "CA_3" : STORES[0];
+    $("dept").innerHTML = DEPTS.map(d => `<option value="${d}">${deptName(d)}</option>`).join("");
+    fillSalesStores(); setProduct("FOODS_3_090");
+  } catch (e) {
+    $("store").innerHTML = $("t-store").innerHTML = `<option value="">Sin tiendas</option>`;
+    showMsg("msg", e.message);
+  }
+}
+
+// Productos: el usuario elige Departamento + Artículo; el código (FOODS_3_090) queda en #item
+async function loadItems(keep) {
+  const s = $("store").value, d = $("dept").value; if (!s || !d) return;
+  $("art").innerHTML = `<option value="">Cargando…</option>`;
+  try {
+    const items = await api(`/items?store_id=${s}&q=${d}_&limit=1000`);
+    $("art").innerHTML = items.map(i => `<option value="${esc(i)}">Artículo ${esc(i.split("_")[2])}</option>`).join("");
+    $("art").value = items.includes(keep) ? keep : (items[0] || "");
+  } catch (e) { $("art").innerHTML = `<option value="">Sin artículos</option>`; showMsg("msg", e.message); }
+  $("item").value = $("art").value;
+}
+function setProduct(code) {
+  $("dept").value = code.slice(0, code.lastIndexOf("_"));
+  return loadItems(code);
 }
 
 function validate() {
   const item = $("item").value.trim().toUpperCase();
   if (!$("store").value) return "Elige una tienda.";
-  if (!/^(FOODS|HOBBIES|HOUSEHOLD)_\d_\d{3}$/.test(item)) return "Producto inválido. Formato: FOODS_3_090.";
+  if (!/^(FOODS|HOBBIES|HOUSEHOLD)_\d_\d{3}$/.test(item)) return "Elige un departamento y un artículo.";
   const inv = Number($("inv").value), lt = Number($("lt").value), cov = Number($("cov").value);
   if ($("inv").value === "" || !(inv >= 0)) return "El inventario debe ser un número ≥ 0.";
-  if (!Number.isInteger(lt) || lt < 0 || lt > 60) return "Lead time: entero entre 0 y 60.";
-  if (!Number.isInteger(cov) || cov < 1 || cov > 56) return "Días a cubrir: entero entre 1 y 56.";
+  if (!Number.isInteger(lt) || lt < 0 || lt > 60) return "Tiempo de entrega: número entero entre 0 y 60.";
+  if (!Number.isInteger(cov) || cov < 1 || cov > 56) return "Días a cubrir: número entero entre 1 y 56.";
   return null;
 }
 
-function chart(r) {
-  const bars = [
-    { label: "Últimos 28 días", v: r.last_28d_units, c: "var(--bar-a)" },
-    { label: "Pronóstico 28 días", v: r.forecast_28d_units, c: "var(--bar-b)" },
-    { label: "Inventario actual", v: Number($("inv").value), c: "var(--bar-c)" },
-  ];
-  const max = Math.max(...bars.map(b => b.v), 1);
-  return bars.map(b => `<div class="bar"><span>${b.label}</span>
-    <div class="track"><div class="fill" style="width:calc((100% - 70px) * ${b.v / max});background:${b.c}"></div><b>${fmt(b.v)}</b></div></div>`).join("");
-}
+const ICONS = {
+  ok: `<svg viewBox="0 0 24 24" fill="none" stroke="#0068ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>`,
+  warn: `<svg viewBox="0 0 24 24" fill="none" stroke="#9a5a00" stroke-width="3" stroke-linecap="round"><path d="M12 6v7M12 18h.01"/></svg>`,
+  bad: `<svg viewBox="0 0 24 24" fill="none" stroke="#d50032" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
+};
 
-function render(r) {
+function renderCov(r) {
   const riskTxt = { alto: "Riesgo alto de quiebre", medio: "Pedir pronto", bajo: "Cobertura suficiente", sin_demanda: "Sin demanda esperada" }[r.risk];
-  const trend = r.trend_pct > 0 ? `▲ ${fmt(r.trend_pct, 1)}%` : r.trend_pct < 0 ? `▼ ${fmt(Math.abs(r.trend_pct), 1)}%` : "sin cambio";
+  const icon = { alto: ICONS.bad, medio: ICONS.warn, bajo: ICONS.ok, sin_demanda: ICONS.warn }[r.risk];
+  const inv = Number($("inv").value);
+  const max = Math.max(r.last_28d_units, r.forecast_28d_units, inv, 1);
+  const hb = (lbl, v, c) => `<div class="hb"><span>${lbl}</span><div class="tr"><div class="fl" style="width:calc((100% - 60px) * ${v / max});background:${c}"></div><b>${fmt(v)}</b></div></div>`;
   $("out").innerHTML = `
-    <div class="head"><h2>${r.item_id} · ${r.store_id}</h2><span class="badge ${r.risk}">${riskTxt}</span></div>
-    <div class="hint">Fecha de referencia (hoy del dataset): ${r.as_of}${r.price != null ? ` · precio $${fmt(r.price, 2)}` : ""}</div>
-    <div class="kpis">
-      <div class="kpi"><div class="l">Demanda próximos 28 días</div><div class="v">${fmt(r.forecast_28d_units)}</div><div class="s">${trend} vs. últimos 28 días</div></div>
-      <div class="kpi"><div class="l">Días de cobertura</div><div class="v">${r.coverage_days == null ? "∞" : fmt(r.coverage_days, 1)}</div><div class="s">${r.stockout_date ? "Se agota ≈ " + r.stockout_date : "—"}</div></div>
-      <div class="kpi"><div class="l">Pedido sugerido</div><div class="v">${fmt(r.suggested_order_units)}</div><div class="s">${r.suggested_order_units > 0 ? "unidades, pedir hoy" : "aún no es necesario pedir"}</div></div>
-      <div class="kpi"><div class="l">Punto de reorden</div><div class="v">${fmt(r.reorder_point_units)}</div><div class="s">incluye ${fmt(r.safety_stock_units)} de seguridad</div></div>
-    </div>
-    <div class="chart" role="img" aria-label="Comparación: últimos 28 días, pronóstico e inventario">${chart(r)}</div>
-    <div class="explain">Demanda diaria esperada: ${fmt(r.forecast_daily_units, 2)} u/día.
-      Se pide cuando el inventario llega al punto de reorden (demanda durante el lead time + stock de seguridad);
-      la cantidad = demanda × (lead time + días a cubrir) + stock de seguridad − inventario.
-      Pronóstico generado por el endpoint <b>${r.model_endpoint}</b> de Databricks.</div>`;
+    <div class="res v-${r.risk}">
+      <div class="vband">
+        <div class="vico">${icon}</div>
+        <div class="vt">${esc(itemName(r.item_id))} · ${esc(storeName(r.store_id))}</div>
+        <div class="vv">${riskTxt}</div>
+        <div class="vbig"><b>${r.coverage_days == null ? "∞" : fmt(r.coverage_days, 1)}</b><span>días de cobertura${r.stockout_date ? " · se agota ≈ " + fdate(r.stockout_date) : ""}</span></div>
+      </div>
+      <dl>
+        <dt>Demanda próximos 28 días</dt><dd class="hl">${fmt(r.forecast_28d_units)} u</dd>
+        <dt>Cambio vs. últimos 28 días</dt><dd>${pctHtml(r.trend_pct)}</dd>
+        <dt>Pedido sugerido</dt><dd class="hl">${r.suggested_order_units > 0 ? fmt(r.suggested_order_units) + " u · pedir hoy" : "Aún no es necesario"}</dd>
+        <dt>Punto de reorden</dt><dd>${fmt(r.reorder_point_units)} u</dd>
+        <dt>Inventario de seguridad</dt><dd>${fmt(r.safety_stock_units)} u</dd>
+        <dt>Precio actual</dt><dd>${r.price == null ? "—" : "$" + fmt(r.price, 2)}</dd>
+      </dl>
+      <div class="note"><div class="hbars">
+        ${hb("Últimos 28 días", r.last_28d_units, "#c3ccd7")}${hb("Pronóstico 28 días", r.forecast_28d_units, "var(--blue)")}${hb("Inventario actual", inv, "var(--sun)")}
+      </div>
+      <p style="margin:14px 0 0">Demanda diaria esperada: ${fmt(r.forecast_daily_units, 2)} u/día. Se pide cuando el inventario llega al punto de reorden;
+        cantidad = demanda × (tiempo de entrega + días a cubrir) + inventario de seguridad − inventario actual. Pronóstico del servicio del modelo <b>${esc(r.model_endpoint)}</b> en Databricks · fecha de referencia ${fdate(r.as_of)}.</p></div>
+    </div>`;
 }
 
-$("store").addEventListener("change", loadItems);
-$("item").addEventListener("input", loadItems);
+$("store").addEventListener("change", () => loadItems($("item").value));
+$("dept").addEventListener("change", () => loadItems());
+$("art").addEventListener("change", () => $("item").value = $("art").value);
 $("f").addEventListener("submit", async (ev) => {
-  ev.preventDefault(); clearMsg();
-  const err = validate(); if (err) return showMsg(err);
+  ev.preventDefault(); clearMsg("msg");
+  const err = validate(); if (err) return showMsg("msg", err);
   const btn = $("go"); btn.disabled = true; btn.textContent = "Consultando modelo…";
-  const slow = setTimeout(() => showMsg("El modelo está despertando (scale to zero). Puede tardar hasta 2 minutos…", "info"), 5000);
+  const slow = setTimeout(() => showMsg("msg", "El modelo estaba en reposo y está arrancando. Puede tardar hasta 2 minutos…", "info"), 5000);
   try {
     const r = await api("/forecast", {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -226,11 +575,233 @@ $("f").addEventListener("submit", async (ev) => {
       }),
     });
     if (typeof r.forecast_28d_units !== "number") throw new Error("La respuesta del modelo no tiene el formato esperado.");
-    clearMsg(); render(r);
-  } catch (e) { showMsg(e.message); }
+    clearMsg("msg"); renderCov(r);
+  } catch (e) { showMsg("msg", e.message); }
   finally { clearTimeout(slow); btn.disabled = false; btn.textContent = "Calcular cobertura"; }
 });
-loadStores();
+
+/* ============================ ventas ============================ */
+const CAT_ICON = {
+  "": `<svg viewBox="0 0 48 48" fill="none" stroke="#0068ff" stroke-width="3.5" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="3"/><rect x="27" y="8" width="13" height="13" rx="3"/><rect x="8" y="27" width="13" height="13" rx="3"/><rect x="27" y="27" width="13" height="13" rx="3"/></svg>`,
+  FOODS: `<svg viewBox="0 0 48 48" fill="none" stroke="#0068ff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M24 14c-4-4-14-3-14 9 0 9 6 17 10 17 2 0 3-1 4-1s2 1 4 1c4 0 10-8 10-17 0-12-10-13-14-9z"/><path d="M24 14c0-4 2-7 5-8"/></svg>`,
+  HOBBIES: `<svg viewBox="0 0 48 48" fill="none" stroke="#0068ff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="16" width="36" height="20" rx="10"/><path d="M15 22v8M11 26h8"/><circle cx="31" cy="24" r="1.5" fill="#0068ff"/><circle cx="35" cy="28" r="1.5" fill="#0068ff"/></svg>`,
+  HOUSEHOLD: `<svg viewBox="0 0 48 48" fill="none" stroke="#0068ff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22L24 9l16 13"/><path d="M12 19v20h24V19"/><path d="M20 39V28h8v11"/></svg>`,
+};
+const CAT_NAME = { "": "Todas", FOODS: "Alimentos", HOBBIES: "Pasatiempos", HOUSEHOLD: "Hogar" };
+$("s-cats").innerHTML = Object.keys(CAT_ICON).map(k => `<button class="cat" role="radio" aria-checked="${k === ""}" data-cat="${k}">
+  <div class="ci">${CAT_ICON[k]}</div><span>${CAT_NAME[k]}</span></button>`).join("");
+$("s-cats").querySelectorAll(".cat").forEach(b => b.addEventListener("click", () => {
+  $("s-cats").querySelectorAll(".cat").forEach(x => x.setAttribute("aria-checked", String(x === b)));
+  $("s-cat").value = b.dataset.cat; loadSales();
+}));
+
+function fillSalesStores() {
+  const st = $("s-state").value, cur = $("s-store").value;
+  const list = STORES.filter(s => !st || s.startsWith(st + "_"));
+  $("s-store").innerHTML = `<option value="">Todas</option>` + list.map(s => `<option value="${s}">${esc(storeName(s))}</option>`).join("");
+  if (list.includes(cur)) $("s-store").value = cur;
+}
+
+let salesTimer, salesReq = 0, LAST_CHART = null, resizeTimer;
+window.addEventListener("resize", () => { clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => LAST_CHART && $("v-ven").classList.contains("on") && lineChart($("s-chart"), ...LAST_CHART), 150); });
+
+function loadSales() {
+  clearTimeout(salesTimer);
+  salesTimer = setTimeout(async () => {
+    const id = ++salesReq; clearMsg("s-msg");
+    const p = new URLSearchParams();
+    for (const [k, el] of [["state_id", "s-state"], ["store_id", "s-store"], ["cat_id", "s-cat"],
+                           ["date_from", "s-from"], ["date_to", "s-to"]]) if ($(el).value) p.set(k, $(el).value);
+    p.set("metric", $("s-metric").value); p.set("grain", $("s-grain").value); p.set("group_by", $("s-group").value);
+    if ($("s-from").value && $("s-to").value && $("s-from").value > $("s-to").value)
+      return showMsg("s-msg", "La fecha «Desde» es posterior a «Hasta».");
+    $("s-out").style.opacity = .55;
+    try {
+      const r = await api("/sales?" + p.toString());
+      if (id !== salesReq) return;
+      if (!$("s-from").value) $("s-from").value = r.date_from;
+      if (!$("s-to").value) $("s-to").value = r.date_to;
+      renderSales(r);
+    } catch (e) { if (id === salesReq) showMsg("s-msg", e.message); }
+    finally { if (id === salesReq) $("s-out").style.opacity = 1; }
+  }, 150);
+}
+
+function niceTicks(max, n = 4) {
+  if (max <= 0) return [0, 1];
+  const raw = max / n, mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw);
+  const out = []; for (let v = 0; v <= max + step * .001; v += step) out.push(v);
+  if (out.at(-1) < max) out.push(out.at(-1) + step);
+  return out;
+}
+const dlabel = (iso, grain) => { const [y, m, d] = iso.split("-").map(Number);
+  return grain === "month" ? `${MONTHS[m - 1]} ${String(y).slice(2)}` : `${d} ${MONTHS[m - 1]} ${String(y).slice(2)}`; };
+
+function lineChart(el, data, opts) {
+  const W = Math.max(300, Math.round(el.clientWidth || 760)), H = W < 500 ? 240 : 320, L = 50, R = 12, T = 10, B = 28;
+  const n = data.periods.length;
+  const max = Math.max(1, ...data.series.flatMap(s => s.values.filter(v => v != null)));
+  const ticks = niceTicks(max), ymax = ticks.at(-1);
+  const x = i => L + (n <= 1 ? (W - L - R) / 2 : i * (W - L - R) / (n - 1));
+  const y = v => T + (H - T - B) * (1 - v / ymax);
+  const xt = Math.max(1, Math.ceil(n / Math.max(2, Math.floor((W - L - R) / 95))));
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.aria)}">`;
+  ticks.forEach(t => svg += `<line class="gl" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/>
+    <text class="ax" x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${opts.money ? "$" : ""}${short(t)}</text>`);
+  data.periods.forEach((p, i) => { if (i % xt === 0)
+    svg += `<text class="ax" x="${x(i)}" y="${H - 8}" text-anchor="middle">${dlabel(p, opts.grain)}</text>`; });
+  data.series.forEach((s, k) => {
+    let d = "", pen = false;
+    s.values.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? "L" : "M") + `${x(i).toFixed(1)},${y(v).toFixed(1)}`; pen = true; });
+    svg += `<path d="${d}" fill="none" stroke="var(--s${k % 10 + 1})" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  });
+  svg += `<line class="cursor" y1="${T}" y2="${H - B}" x1="0" x2="0"/>
+          <rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="transparent" class="hit"/></svg>`;
+  el.innerHTML = `<div class="linechart">${svg}<div class="tip"></div></div>
+    <div class="legend">${data.series.map((s, k) => `<span><i style="background:var(--s${k % 10 + 1})"></i>${esc(s.name)}</span>`).join("")}</div>`;
+  const svgEl = el.querySelector("svg"), tip = el.querySelector(".tip"), cur = el.querySelector(".cursor");
+  const move = (ev) => {
+    const box = svgEl.getBoundingClientRect(), sx = (ev.clientX - box.left) * W / box.width;
+    const i = Math.max(0, Math.min(n - 1, Math.round((sx - L) / ((W - L - R) / Math.max(n - 1, 1)))));
+    cur.setAttribute("x1", x(i)); cur.setAttribute("x2", x(i)); cur.classList.add("on");
+    const rows = data.series.map((s, k) => ({ k, name: s.name, v: s.values[i] })).filter(r => r.v != null).sort((a, b) => b.v - a.v);
+    tip.innerHTML = `<div class="t">${opts.grain === "week" ? "Semana del " : ""}${dlabel(data.periods[i], opts.grain)}</div>` +
+      rows.map(r => `<div><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--s${r.k % 10 + 1});margin-right:6px"></i>${esc(r.name)}: <b>${opts.money ? "$" : ""}${fmt(r.v)}</b></div>`).join("");
+    tip.style.display = "block";
+    const px = x(i) * box.width / W, tw = tip.offsetWidth;
+    tip.style.left = (px + tw + 16 > box.width ? px - tw - 10 : px + 10) + "px"; tip.style.top = "8px";
+  };
+  const hit = el.querySelector(".hit");
+  hit.addEventListener("mousemove", move);
+  hit.addEventListener("touchstart", (e) => move(e.touches[0]), { passive: true });
+  hit.addEventListener("mouseleave", () => { tip.style.display = "none"; cur.classList.remove("on"); });
+}
+
+function renderSales(r) {
+  const periods = [...new Set(r.points.map(p => p.period))].sort();
+  const names = [...new Set(r.points.map(p => p.series))].sort();
+  const idx = new Map(periods.map((p, i) => [p, i])), sIdx = new Map(names.map((n, i) => [n, i]));
+  const label = (n) => r.group_by === "store" ? storeName(n) : r.group_by === "state" ? (STATE_NAME[n] || n) : r.group_by === "category" ? (CAT_ES[n] || n) : n;
+  const series = names.map(name => ({ name: label(name), values: Array(periods.length).fill(null) }));
+  r.points.forEach(p => series[sIdx.get(p.series)].values[idx.get(p.period)] = p.value);
+  const totals = series.map(s => ({ name: s.name, t: s.values.reduce((a, v) => a + (v || 0), 0) })).sort((a, b) => b.t - a.t);
+  const money = r.metric === "revenue";
+  const grainTxt = { day: "día", week: "semana", month: "mes" }[r.grain];
+  const chg = (() => { if (periods.length < 3) return null;
+    const tot = i => series.reduce((a, s) => a + (s.values[i] || 0), 0);
+    const a = tot(periods.length - 3), b = tot(periods.length - 2); return a > 0 ? (b / a - 1) * 100 : null; })();
+  const scope = [$("s-store").value ? storeName($("s-store").value) : (STATE_NAME[$("s-state").value] || "Todos los estados"), CAT_NAME[$("s-cat").value] === "Todas" ? "todas las categorías" : CAT_NAME[$("s-cat").value]].join(" · ");
+
+  $("s-out").innerHTML = `
+    <div class="grid k4">
+      <div class="card kpi"><div class="lbl">Total del periodo</div><div class="val">${money ? "$" : ""}${short(r.total)}</div><div class="foot">${money ? "venta" : "unidades"} · ${fdate(r.date_from)} → ${fdate(r.date_to)}</div></div>
+      <div class="card kpi"><div class="lbl">Promedio diario</div><div class="val">${money ? "$" : ""}${fmt(r.avg_per_day)}</div><div class="foot">por día con datos</div></div>
+      <div class="card kpi"><div class="lbl">${series.length > 1 ? "Mayor participación" : "Alcance"}</div><div class="val" style="font-size:24px">${series.length > 1 ? esc(totals[0].name) : esc(scope)}</div><div class="foot">${series.length > 1 ? fmt(totals[0].t / Math.max(r.total, 1) * 100, 1) + "% del total" : "una sola serie"}</div></div>
+      <div class="card kpi"><div class="lbl">${{ day: "Último día", week: "Última semana completa", month: "Último mes completo" }[r.grain]}</div><div class="val" style="font-size:26px">${r.grain === "day" ? "—" : pctHtml(chg)}</div><div class="foot">vs. ${r.grain === "week" ? "la semana anterior" : r.grain === "month" ? "el mes anterior" : "el día anterior"}</div></div>
+    </div>
+    <div class="card">
+      <h2>${money ? "Venta en $" : "Unidades vendidas"} por ${grainTxt}</h2>
+      <p class="sub">${esc(scope)} · pasa el cursor sobre la gráfica para ver los valores${r.grain === "day" ? " · por día se notan los fines de semana y el cierre de Navidad" : ""}.</p>
+      <div id="s-chart"></div>
+    </div>`;
+  LAST_CHART = [{ periods, series }, { grain: r.grain, money, aria: `Ventas por ${grainTxt}` }];
+  lineChart($("s-chart"), ...LAST_CHART);
+}
+
+for (const id of ["s-store", "s-group", "s-metric", "s-grain", "s-from", "s-to"]) $(id).addEventListener("change", loadSales);
+$("s-state").addEventListener("change", () => { fillSalesStores(); loadSales(); });
+$("s-reset").addEventListener("click", () => {
+  ["s-state", "s-store", "s-cat", "s-from", "s-to"].forEach(id => $(id).value = "");
+  $("s-group").value = "category"; $("s-metric").value = "units"; $("s-grain").value = "week";
+  $("s-cats").querySelectorAll(".cat").forEach(x => x.setAttribute("aria-checked", String(x.dataset.cat === "")));
+  fillSalesStores(); loadSales();
+});
+
+/* ============================ tiendas ============================ */
+let STORE_FC = null;
+$("t-go").addEventListener("click", async () => {
+  const s = $("t-store").value; if (!s) return showMsg("t-msg", "Elige una tienda.");
+  clearMsg("t-msg");
+  const btn = $("t-go"); btn.disabled = true; btn.textContent = "Consultando modelo…";
+  const slow = setTimeout(() => showMsg("t-msg", "Pronosticando unos 3,000 productos. Si el modelo estaba en reposo puede tardar de 1 a 3 minutos…", "info"), 4000);
+  try {
+    const r = await api(`/store-forecast?store_id=${s}`, {}, STORE_TIMEOUT_MS);
+    if (!Array.isArray(r.items)) throw new Error("La respuesta del modelo no tiene el formato esperado.");
+    STORE_FC = r; clearMsg("t-msg"); renderStore();
+  } catch (e) { showMsg("t-msg", e.message); }
+  finally { clearTimeout(slow); btn.disabled = false; btn.textContent = "Pronosticar tienda"; }
+});
+
+function pairs(groups, nameOf) {
+  const max = Math.max(1, ...groups.flatMap(g => [g.last_28d_units, g.forecast_28d_units]));
+  return groups.map(g => `<div class="pair"><span><b>${esc(nameOf(g.name))}</b></span>
+    <div class="bars"><div style="width:${g.last_28d_units / max * 100}%;background:#c3ccd7" title="Últimos 28 días: ${fmt(g.last_28d_units)}"></div>
+    <div style="width:${g.forecast_28d_units / max * 100}%;background:var(--blue)" title="Pronóstico: ${fmt(g.forecast_28d_units)}"></div></div>
+    <span class="pct">${pctHtml(g.change_pct)}</span></div>`).join("");
+}
+
+function renderStore() {
+  const r = STORE_FC;
+  const up = r.items.filter(i => i.last_28d_units >= 20 && i.change_units > 0).length;
+  const down = r.items.filter(i => i.last_28d_units >= 20 && i.change_units < 0).length;
+  const chCls = r.change_pct > 0 ? "up" : r.change_pct < 0 ? "down" : "";
+  $("t-out").innerHTML = `
+    <div class="chead">
+      <div class="ci">${esc(r.store_id.slice(3))}</div>
+      <div><div class="eb">${STATE_NAME[r.store_id.slice(0, 2)] || ""} · ${r.cached ? "resultado guardado" : "recién calculado"}</div>
+        <h2>Tienda ${esc(storeName(r.store_id))} · próximos 28 días</h2>
+        <div class="s">Desde el ${fdate(r.as_of)} · ${fmt(r.n_items)} productos pronosticados por el servicio del modelo ${esc(r.model_endpoint)}</div></div>
+      <div class="ck">
+        <div><b>${short(r.forecast_28d_units)}</b><span>unidades esperadas</span></div>
+        <div><b>${short(r.last_28d_units)}</b><span>unidades últimos 28 días</span></div>
+        <div><b class="${chCls}">${r.change_pct == null ? "—" : (r.change_pct > 0 ? "+" : "") + fmt(r.change_pct, 1) + "%"}</b><span>cambio esperado</span></div>
+        <div><b>${fmt(up)} / ${fmt(down)}</b><span>productos que suben / bajan (venta ≥ 20 u)</span></div>
+      </div>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+      <div class="card"><h2>Por categoría</h2><p class="sub"><span style="color:#8a98a8">■</span> Últimos 28 días · <span style="color:var(--blue)">■</span> Pronóstico</p>${pairs(r.by_category, c => CAT_ES[c] || c)}</div>
+      <div class="card"><h2>Por departamento</h2><p class="sub">Cambio esperado de cada departamento.</p>${pairs(r.by_dept, deptName)}</div>
+    </div>
+    <div class="ptable">
+      <div style="padding:16px 12px 0"><div class="tbar">
+        <h3>Productos</h3>
+        <label class="f">Categoría<select id="t-cat"><option value="">Todas</option><option value="FOODS">Alimentos</option><option value="HOBBIES">Pasatiempos</option><option value="HOUSEHOLD">Hogar</option></select></label>
+        <label class="f">Ordenar por<select id="t-sort"><option value="drop">Mayor caída (unidades)</option><option value="rise">Mayor crecimiento (unidades)</option><option value="demand">Mayor demanda</option></select></label>
+        <label class="f">Venta mínima (últimos 28 días)<input id="t-min" type="number" min="0" step="1" value="20"></label>
+        <label class="f">Buscar<input id="t-q" type="search" placeholder="ej. artículo 090"></label>
+      </div><p class="hint" id="t-count" style="margin:-6px 0 10px"></p></div>
+      <div class="scroll"><table><thead><tr><th>Producto</th><th>Departamento</th><th class="r">Últimos 28 d</th><th class="r">Pronóstico 28 d</th><th class="r">Cambio</th><th class="r">Precio</th></tr></thead>
+      <tbody id="t-body"></tbody></table></div>
+    </div>`;
+  for (const id of ["t-cat", "t-sort", "t-min", "t-q"]) $(id).addEventListener("input", renderStoreTable);
+  renderStoreTable();
+}
+
+function renderStoreTable() {
+  const r = STORE_FC, cat = $("t-cat").value, min = Number($("t-min").value) || 0, q = $("t-q").value.trim().toUpperCase();
+  const items = r.items.filter(i => (!cat || i.category === cat) && i.last_28d_units >= min && (!q || i.item_id.includes(q) || itemName(i.item_id).toUpperCase().includes(q)));
+  const sorters = { drop: (a, b) => a.change_units - b.change_units, rise: (a, b) => b.change_units - a.change_units,
+                    demand: (a, b) => b.forecast_28d_units - a.forecast_28d_units };
+  items.sort(sorters[$("t-sort").value]);
+  const shown = items.slice(0, 40);
+  const maxAbs = Math.max(1, ...shown.map(i => Math.abs(i.change_units)));
+  $("t-count").textContent = `${fmt(items.length)} productos con los filtros · se muestran ${shown.length}. Clic en un producto para calcular su cobertura.`;
+  $("t-body").innerHTML = shown.length ? shown.map(i => `<tr data-item="${esc(i.item_id)}">
+      <td>${esc(itemName(i.item_id))}</td><td><span class="chip mid">${esc(deptName(i.dept))}</span></td>
+      <td class="r">${fmt(i.last_28d_units)}</td><td class="r"><b>${fmt(i.forecast_28d_units)}</b></td>
+      <td class="r"><div class="ubar">${pctHtml(i.change_pct)} <i><b class="${i.change_units < 0 ? "neg" : ""}" style="width:${Math.abs(i.change_units) / maxAbs * 100}%"></b></i></div></td>
+      <td class="r">${i.price == null ? "—" : "$" + fmt(i.price, 2)}</td></tr>`).join("")
+    : `<tr><td colspan="6" class="empty">Ningún producto cumple los filtros.</td></tr>`;
+  $("t-body").querySelectorAll("tr[data-item]").forEach(tr => tr.addEventListener("click", () => {
+    $("store").value = r.store_id; setProduct(tr.dataset.item);
+    openTab("tab-cob"); $("inv").focus(); $("inv").select();
+  }));
+}
+
+loadStatus(); setInterval(loadStatus, 60000);
+loadStores(); loadSummary();
 </script>
 </body>
 </html>

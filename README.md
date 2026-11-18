@@ -208,6 +208,8 @@ El endpoint de Databricks recibe 21 features numéricas, algo que un usuario no 
 | Ruta | Descripción |
 |---|---|
 | `POST /forecast` | Pronóstico 28 días + cobertura + punto de reorden + pedido sugerido |
+| `GET /store-forecast` | Pronóstico de **todos** los productos de una tienda (llamadas por lote de 1,000 filas al endpoint, caché de 6 h) |
+| `GET /sales` | Ventas históricas de `gold_sales_daily` con filtros (estado, tienda, categoría, fechas), métrica, periodo y agrupación |
 | `GET /stores` · `GET /items` | Catálogo para los selectores |
 | `GET /health` | Estado (features cargadas, credenciales) |
 | `GET /docs` | **Swagger / OpenAPI** generado automáticamente |
@@ -227,7 +229,20 @@ El endpoint de Databricks recibe 21 features numéricas, algo que un usuario no 
 | Producto o tienda inexistente | 404 |
 | Databricks no disponible al arrancar | Reintenta la carga de features en la siguiente petición |
 
-**Página web** (`/`): formulario → tarjetas de demanda, cobertura, fecha estimada de quiebre, pedido sugerido y punto de reorden, más una gráfica comparativa. Valida antes de enviar, tiene límite de espera, avisa cuando el modelo está "despertando" y muestra mensajes claros ante cualquier error. Funciona en celular y en modo oscuro.
+**Página web** (`/`), con estilo de tablero corporativo (barra de estado del modelo, banda de KPIs y tarjetas por tienda) y cuatro pestañas:
+
+| Pestaña | Qué hace | Filtros |
+|---|---|---|
+| **Resumen** | KPIs del proyecto (volumen, error del modelo), flujo Bronze → Silver → Gold → modelo → endpoint, y ventas de la última semana por tienda (clic → su pronóstico) | — |
+| **Cobertura por producto** | Consulta al modelo para un producto: demanda 28 días, días de cobertura, fecha estimada de quiebre, punto de reorden y pedido sugerido | Tienda, producto, inventario, lead time, días a cubrir, nivel de servicio |
+| **Ventas históricas** | Exploración de la capa Gold: gráfica interactiva (valores al pasar el cursor) y KPIs del periodo | Estado, tienda, categoría, rango de fechas, unidades o $, día/semana/mes, comparar por categoría/tienda/estado |
+| **Pronóstico por tienda** | Pronostica los ~3,000 productos de una tienda: demanda esperada, cambio por categoría y departamento, ranking de productos que más suben o bajan; clic en un producto → su cobertura | Tienda, categoría, orden, venta mínima, búsqueda |
+
+![Ventas históricas](docs/img/ventas.png)
+
+![Pronóstico por tienda](docs/img/tienda.png)
+
+En todas: validación antes de enviar, límite de espera, aviso cuando el modelo está "despertando" y mensajes claros ante cualquier error. Funciona en celular y en modo oscuro.
 
 **Lógica de inventario:**
 - Stock de seguridad = z(nivel de servicio) · σ diaria · √(lead time + días a cubrir)
@@ -273,7 +288,7 @@ docker compose up --build
 - Página: **http://localhost:8001**
 - Swagger: **http://localhost:8001/docs**
 
-Al arrancar, la API descarga `gold_latest.csv` del Volume con el mismo token. La primera consulta puede tardar 1–2 minutos si el endpoint estaba en reposo (*scale to zero*).
+Al arrancar, la API descarga `gold_latest.csv` y `gold_sales_daily.csv` del Volume con el mismo token. La primera consulta puede tardar 1–2 minutos si el endpoint estaba en reposo (*scale to zero*).
 
 <details>
 <summary>Sin Docker (Python 3.12+)</summary>
@@ -299,11 +314,11 @@ m5-cobertura/
 │   ├── 03_gold.py             # features directas 28 días + gold_latest
 │   ├── 04_train.py            # LightGBM + MLflow + registro en UC
 │   ├── 05_query_endpoint.py   # prueba del endpoint publicado
-│   └── 06_export_latest.py    # gold_latest → CSV para la API
+│   └── 06_export_latest.py    # gold_latest y gold_sales_daily → CSV para la API
 ├── api/
 │   ├── app/
-│   │   ├── main.py            # FastAPI: validación, consumo del endpoint, lógica de inventario
-│   │   └── static/index.html  # página web
+│   │   ├── main.py            # FastAPI: validación, consumo del endpoint, lógica de inventario, ventas
+│   │   └── static/index.html  # página web (3 pestañas, gráficas SVG sin librerías externas)
 │   ├── Dockerfile
 │   ├── requirements.txt       # versiones fijas
 │   ├── .env.example           # plantilla (el .env real no se sube)
