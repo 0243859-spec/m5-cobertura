@@ -20,7 +20,6 @@ Pronóstico de demanda a 28 días por producto y tienda (Walmart, dataset **M5**
 7. [Orquestación (Job)](#7-orquestación-job)
 8. [Cómo reproducirlo](#8-cómo-reproducirlo)
 9. [Estructura del repositorio](#9-estructura-del-repositorio)
-10. [Limitaciones y decisiones](#10-limitaciones-y-decisiones)
 
 ---
 
@@ -328,13 +327,3 @@ m5-cobertura/
 ├── docker-compose.yml
 └── docs/img/                  # capturas
 ```
-
----
-
-## 10. Limitaciones y decisiones
-
-- **Fecha de referencia:** el dataset termina el 2016-05-22; la app trata **2016-05-23** como "hoy".
-- **Databricks Free Edition:** cuota diaria de cómputo; por eso se usa desde 2015, el disparador semanal está en pausa y el endpoint usa *scale to zero* (a cambio de un *cold start* de 1–2 minutos, manejado por la API y la página).
-- **Error irreducible:** muchos productos venden pocas piezas al mes; parte del error es azar puro. El modelo mejora 11.8 % a la línea base exigente a nivel producto-tienda y llega a 3.7 % de error a nivel tienda-categoría.
-- **Seguridad:** el token nunca se sube al repositorio (`.env` en `.gitignore`); se comparte por canal privado.
-- **Precio futuro:** el modelo usa el precio actual; no simula promociones futuras.
