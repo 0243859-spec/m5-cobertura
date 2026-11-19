@@ -101,7 +101,7 @@ Los CSV se cargan **tal cual** a Delta (todo como texto) con columnas de auditor
 | Ceros antes de que el producto tuviera precio | **Eliminados** (inner join con precios) | Son ceros estructurales (no se vendía), no demanda cero |
 | Nulos en eventos | `"none"` | La ausencia de evento es información |
 | Duplicados | `dropDuplicates` por llave | 1 fila por producto-tienda-día |
-| Outliers | **Marcados** (> p99.9 por producto), no borrados | Los picos reales (eventos) son señal |
+| Outliers | **Marcados** (`is_outlier`, > p99.9 por producto), no borrados ni modificados | Son picos reales (eventos, promociones) y parte de la demanda; solo 0.08 %. El modelo usa promedios de 7–112 días y objetivo Tweedie, que amortiguan picos aislados |
 | Precios ≤ 0 | Filtrados | Precio inválido |
 
 **Resultado:** `silver_sales` con **15,389,479 filas** (2015-01-01 → 2016-05-22), particionada por estado; **59.8 %** de días con venta 0; **12,252** outliers marcados (0.08 %).
@@ -126,6 +126,8 @@ Enfoque **directo**: para cada producto-tienda y una fecha de corte (*origen*) s
 | `gold_features` | — | Features del modelo diario (v1–v2); se conserva como evidencia de la primera iteración |
 
 **Sin fuga de información:** todas las ventanas terminan el día **anterior** al origen (`rangeBetween(-k, -1)`).
+
+**Nulos en Gold:** `ly28` (venta del mismo periodo del año anterior) queda vacío cuando el producto no tiene un año de historia, y `price_chg28` cuando no había precio 28 días antes. No se imputan: LightGBM maneja los valores faltantes de forma nativa (aprende hacia qué rama mandarlos), y rellenarlos con 0 le diría al modelo que "no vendió nada", lo cual es falso.
 
 ---
 
@@ -175,16 +177,16 @@ También se probaron (sin mejora significativa): más datos de entrenamiento, co
 | Entrada | 21 features numéricas (firma MLflow validada por el endpoint) |
 | Salida | unidades pronosticadas para los próximos 28 días |
 
-**Consulta desde PowerShell** (como en clase). Los valores de ejemplo son ilustrativos; el JSON exacto de un producto real lo imprime el notebook [`05_query_endpoint`](notebooks/05_query_endpoint.py):
+**Consulta desde PowerShell** (como en clase), con las features reales de **FOODS_3_090 en la tienda CA_3** (las imprime el notebook [`05_query_endpoint`](notebooks/05_query_endpoint.py)):
 
 ```powershell
 $token = "<TU_TOKEN>"
 $url   = "https://<tu-workspace>.cloud.databricks.com/serving-endpoints/m5-demand/invocations"
 $body  = @{ dataframe_records = @(@{
-  item_id_idx=702; dept_id_idx=2; cat_id_idx=0; store_id_idx=2; state_id_idx=0;
-  m7=95.71; m14=114.86; m28=119.89; m56=115.13; m112=112.56; std28=34.89;
-  zf28=0; zf112=0; days_since_sale=1; ly28=1174; price=1.6; price_norm=1.0;
-  price_chg28=0; snap_days=10; event_days=0; month=5 }) } | ConvertTo-Json -Depth 3
+  item_id_idx=702.0; dept_id_idx=2.0; cat_id_idx=0.0; store_id_idx=2.0; state_id_idx=0.0;
+  m7=95.71428571428571; m14=114.85714285714286; m28=119.89285714285714; m56=115.125; m112=112.5625;
+  std28=34.893848853783496; zf28=0.0; zf112=0.0; days_since_sale=1.0; ly28=1174.0;
+  price=1.6; price_norm=1.110473536082186; price_chg28=0.0; snap_days=10.0; event_days=4.0; month=5.0 }) } | ConvertTo-Json -Depth 3
 Invoke-RestMethod -Method Post -Uri $url -Headers @{Authorization="Bearer $token"} `
   -ContentType "application/json" -Body $body
 ```
@@ -194,10 +196,10 @@ Invoke-RestMethod -Method Post -Uri $url -Headers @{Authorization="Bearer $token
 ```bash
 curl -X POST "https://<tu-workspace>.cloud.databricks.com/serving-endpoints/m5-demand/invocations" \
   -H "Authorization: Bearer <TU_TOKEN>" -H "Content-Type: application/json" \
-  -d '{"dataframe_records":[{"item_id_idx":702,"dept_id_idx":2,"cat_id_idx":0,"store_id_idx":2,"state_id_idx":0,"m7":95.71,"m14":114.86,"m28":119.89,"m56":115.13,"m112":112.56,"std28":34.89,"zf28":0,"zf112":0,"days_since_sale":1,"ly28":1174,"price":1.6,"price_norm":1.0,"price_chg28":0,"snap_days":10,"event_days":0,"month":5}]}'
+  -d '{"dataframe_records":[{"item_id_idx":702.0,"dept_id_idx":2.0,"cat_id_idx":0.0,"store_id_idx":2.0,"state_id_idx":0.0,"m7":95.71428571428571,"m14":114.85714285714286,"m28":119.89285714285714,"m56":115.125,"m112":112.5625,"std28":34.893848853783496,"zf28":0.0,"zf112":0.0,"days_since_sale":1.0,"ly28":1174.0,"price":1.6,"price_norm":1.110473536082186,"price_chg28":0.0,"snap_days":10.0,"event_days":4.0,"month":5.0}]}'
 ```
 
-Respuesta: `{"predictions": [<unidades en 28 días>]}`. Con las features reales de FOODS_3_090 en CA_3 el modelo devuelve ≈ 2,895 unidades.
+Respuesta: `{"predictions": [2894.8...]}` → **≈ 2,895 unidades** en los próximos 28 días (vendió 3,357 en los últimos 28: el modelo detecta que la última semana viene más baja).
 
 ---
 

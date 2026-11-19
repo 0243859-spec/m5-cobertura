@@ -9,7 +9,7 @@
 # MAGIC | Ventas en 0 antes de que el producto tenga precio | Se eliminan | No es demanda cero: el producto aún no se vendía (cero estructural) |
 # MAGIC | Nulos en eventos | `"none"` | Ausencia de evento es información, no dato faltante |
 # MAGIC | Duplicados | `dropDuplicates` por llave | Garantiza 1 fila por producto-tienda-día |
-# MAGIC | Outliers de venta | Se **marcan** (> p99.9 por producto); no se borran | Picos reales (eventos) son señal; se acotan solo en Gold |
+# MAGIC | Outliers de venta | Se **marcan** (`is_outlier`, > p99.9 por producto); no se borran ni se modifican | Son picos reales (eventos, promociones) y forman parte de la demanda a pronosticar. Son solo 0.08 %; el modelo usa promedios de 7–112 días y objetivo Tweedie, que amortiguan picos aislados |
 
 # COMMAND ----------
 from pyspark.sql import functions as F, Window as W
