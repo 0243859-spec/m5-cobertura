@@ -56,29 +56,31 @@ section[role=tabpanel].on{display:block;animation:fade .25s ease}
 .k4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .g57{grid-template-columns:minmax(300px,5fr) 7fr}
 
-/* banda de encabezado de cada pestaña */
-.pband{position:relative;margin:0 calc(50% - 50vw) 40px;padding:44px 24px 84px;color:#fff;text-align:center;overflow:hidden;
-  background:radial-gradient(120% 160% at 10% 0%,#2a6ff0 0%,#0053e2 30%,#002e99 62%,#001e60 100%);border-radius:0 0 50% 50% / 0 0 90px 90px}
-.pband::before,.band::before{content:"";position:absolute;inset:0;opacity:.18;pointer-events:none;background-repeat:no-repeat;background-size:100% 100%;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.4'%3E%3Cpath d='M0 220 C200 160 320 260 520 200 S860 120 1200 170'/%3E%3Cpath d='M0 250 C220 200 360 290 560 230 S900 160 1200 210'/%3E%3Cpath d='M0 190 C180 130 300 220 500 170 S820 90 1200 130'/%3E%3C/g%3E%3C/svg%3E")}
-.pband>*,.band>*{position:relative}
-.pband .eb,.band .eb{display:inline-block;font-size:14px;font-weight:700;letter-spacing:.02em;padding:6px 16px;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;margin:0 0 16px}
-.pband h2{color:#fff;font-size:clamp(28px,3.6vw,44px);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin:0 auto;max-width:26ch}
-.pband p{color:rgba(255,255,255,.86);font-size:17px;margin:14px auto 0;max-width:64ch}
+/* banda de encabezado de cada pestaña: fondo cielo, alineado a la izquierda, línea amarilla */
+.pband,.band{position:relative;margin:0 calc(50% - 50vw) 40px;padding:40px calc(50vw - 50%) 44px;text-align:left;overflow:hidden;
+  background:linear-gradient(180deg,#e9f1fe 0%,#f2f7fe 100%);border-bottom:5px solid var(--sun)}
+.pband::before,.band::before{content:"";position:absolute;top:0;bottom:0;right:0;width:46%;pointer-events:none;
+  background-image:radial-gradient(rgba(0,83,226,.20) 1.6px,transparent 1.8px);background-size:18px 18px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 70%);mask-image:linear-gradient(90deg,transparent,#000 70%)}
+.pband::after,.band::after{content:"";position:absolute;right:calc(50vw - 50% - 40px);top:50%;width:220px;height:220px;transform:translateY(-50%);border-radius:50%;
+  border:22px solid rgba(0,83,226,.10);pointer-events:none}
+.pband>*,.band>*{position:relative;z-index:1}
+.pband .eb,.band .eb{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:.02em;padding:6px 14px;border-radius:999px;background:var(--navy);color:#fff;margin:0 0 14px}
+.pband .eb::before,.band .eb::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--sun)}
+.pband h2{color:var(--navy);font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:0;max-width:24ch}
+.pband p{color:var(--text);font-size:17px;margin:12px 0 0;max-width:62ch}
 
 /* hero del resumen */
-.band{position:relative;margin:0 calc(50% - 50vw);padding:56px 24px 140px;color:#fff;text-align:center;overflow:hidden;
-  background:radial-gradient(120% 140% at 10% 0%,#2a6ff0 0%,#0053e2 30%,#002e99 62%,#001e60 100%);border-radius:0 0 50% 50% / 0 0 150px 150px}
-.stats{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
-.stats .kpi{padding:0 18px;border-left:1px solid rgba(255,255,255,.25)}
-.stats .kpi:first-child{border-left:0}
-.stats .val{white-space:nowrap;font-size:clamp(30px,3.6vw,50px);font-weight:700;letter-spacing:-.035em;line-height:1;margin:0 0 12px}
-.stats .lbl{font-size:17px;font-weight:700}
-.stats .foot{font-size:14px;color:rgba(255,255,255,.82);margin-top:6px}
-.lead{text-align:center;max-width:980px;margin:56px auto 8px}
-.lead h1{font-size:clamp(30px,4.2vw,56px);line-height:1.08;letter-spacing:-.035em;font-weight:700;color:var(--blue);margin:0 auto;max-width:22ch}
-.lead h1 em{font-style:normal;font-weight:800;color:var(--navy)}
-.lead p{font-size:clamp(17px,1.6vw,21px);color:var(--text);margin:24px auto 0;max-width:62ch}
+.band{margin-bottom:0;padding-top:48px;padding-bottom:48px}
+.band h1{font-size:clamp(30px,4vw,52px);line-height:1.06;letter-spacing:-.035em;font-weight:800;color:var(--navy);margin:0;max-width:20ch}
+.band h1 em{font-style:normal;color:var(--blue)}
+.band .intro{font-size:clamp(16px,1.5vw,19px);color:var(--text);margin:16px 0 30px;max-width:60ch}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;max-width:none;margin:0}
+.stats .kpi{background:#fff;border-radius:20px;padding:20px 22px;box-shadow:0 1px 2px rgba(0,30,96,.08),0 8px 24px rgba(0,30,96,.06);border-top:5px solid var(--blue)}
+.stats .kpi:nth-child(4){border-top-color:var(--sun)}
+.stats .val{white-space:nowrap;font-size:clamp(28px,3vw,42px);font-weight:800;letter-spacing:-.035em;line-height:1;margin:0 0 10px;color:var(--navy)}
+.stats .lbl{font-size:16px;font-weight:700;color:var(--ink)}
+.stats .foot{font-size:13.5px;color:var(--muted);margin-top:4px}
 
 /* títulos de sección */
 .shead{margin:56px 0 24px;display:grid;gap:4px}
@@ -241,10 +243,10 @@ tbody tr:hover{background:#f2f7fe}
 
 /* adaptable */
 @media (max-width:1100px){.bar{flex-wrap:wrap;min-height:0;padding-top:14px;gap:8px}nav{margin-left:0;width:100%;height:52px}nav button{font-size:16px;padding:0 12px}}
-@media (max-width:960px){.k4,.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{row-gap:28px}.stats .kpi:nth-child(3){border-left:0}.g57{grid-template-columns:1fr}.site-foot .cols{grid-template-columns:1fr 1fr}.chead{grid-template-columns:1fr}.ck{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:16px}.ck div:nth-child(3){border-left:0;padding-left:0}}
+@media (max-width:960px){.k4,.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.g57{grid-template-columns:1fr}.site-foot .cols{grid-template-columns:1fr 1fr}.chead{grid-template-columns:1fr}.ck{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:16px}.ck div:nth-child(3){border-left:0;padding-left:0}}
 @media (max-width:560px){.util .in{padding:0 16px;gap:14px;font-size:12px;justify-content:flex-start;overflow-x:auto}.bar{padding:12px 16px 0}.mark{width:42px;height:42px}.brand{font-size:21px}.brand small{font-size:14px}
-  main{padding:0 16px 48px}.band{margin:0 -16px;padding:40px 16px 90px;border-radius:0 0 50% 50% / 0 0 60px 60px}.pband{margin:0 -16px 28px;padding:32px 16px 64px;border-radius:0 0 50% 50% / 0 0 44px 44px}
-  .stats{grid-template-columns:1fr}.stats .kpi{border-left:0}.card{padding:20px;border-radius:22px}.k4{grid-template-columns:1fr 1fr}.site-foot .cols{grid-template-columns:1fr}
+  main{padding:0 16px 48px}.band,.pband{margin:0 -16px 28px;padding:30px 16px 32px}.band{margin-bottom:0}.pband::after,.band::after{display:none}
+  .stats{grid-template-columns:1fr}.card{padding:20px;border-radius:22px}.k4{grid-template-columns:1fr 1fr}.site-foot .cols{grid-template-columns:1fr}
   .cat{width:76px}.cat .ci{width:76px;height:76px}.cat .ci svg{width:42px;height:42px}.hb{grid-template-columns:1fr;gap:4px}.pair{grid-template-columns:90px 1fr 60px}}
 </style>
 </head>
@@ -275,16 +277,14 @@ tbody tr:hover{background:#f2f7fe}
 <section role="tabpanel" id="v-res" aria-labelledby="tab-res" class="on">
   <div class="band">
     <div class="eb">Proyecto final · Grandes Volúmenes de Datos</div>
+    <h1>¿Cuánto se va a vender, <em>para cuántos días alcanza</em> y cuándo pedir?</h1>
+    <p class="intro">Un modelo de machine learning entrenado con millones de ventas diarias pronostica la demanda de los próximos 28 días de cada producto en cada tienda, y la convierte en decisiones de inventario.</p>
     <div class="stats">
       <div class="kpi"><div class="val" id="h-units">—</div><div class="lbl">unidades analizadas</div><div class="foot" id="h-range">ventas diarias 2015–2016</div></div>
       <div class="kpi"><div class="val">15.4 M</div><div class="lbl">filas en la capa Plata</div><div class="foot">3,049 productos × 10 tiendas</div></div>
       <div class="kpi"><div class="val">24.8%</div><div class="lbl">error del modelo (WAPE)</div><div class="foot">demanda de 28 días por producto-tienda</div></div>
       <div class="kpi"><div class="val">−11.8%</div><div class="lbl">error vs. regla simple</div><div class="foot">"repetir el último mes" · 3.7% por tienda-categoría</div></div>
     </div>
-  </div>
-  <div class="lead">
-    <h1>¿Cuánto se va a vender, <em>para cuántos días alcanza</em> y cuándo pedir?</h1>
-    <p>Un modelo de machine learning entrenado con millones de ventas diarias pronostica la demanda de los próximos 28 días de cada producto en cada tienda, y la convierte en decisiones de inventario.</p>
   </div>
 
   <div class="shead"><div class="eb">Cómo funciona</div><h2>De los datos crudos a la decisión</h2>
